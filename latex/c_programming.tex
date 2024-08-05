@@ -8,10 +8,16 @@
 \usepackage{tcolorbox}
 \usepackage{fancyhdr}
 \usepackage{hyperref}
+\usepackage{tabularx}
 \usepackage[skip=11pt]{parskip}
 \usepackage[outputdir=/home/neil/.local/share/latex/output]{minted}
 
 \definecolor{bg}{RGB}{22,43,58}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue
+}
 
 \tcbuselibrary{listings, minted, skins}
 \tcbset{listing engine=minted}
@@ -146,5 +152,320 @@ functionality (the C specification says nothing about special characters – it 
 implements the behaviour for these characters).
 
 \subsection{Optional Reading (Advanced): Character Control Sequences}
+
+Pertaining to XTerm (the standard terminal emulator for X11), character literals become much more confusing.
+Technically, we are no longer talking about character literals, but rather, XTerm control sequences. The
+reason I’m discussing Xterm control sequences is because they closely resemble character literals, and can be
+stored as character literals, though they are not technically character literals. XTerm defines 4 types of
+control sequences:
+
+\begin{itemize}
+
+\item{%
+    \textbf{C}:  A single (required) character
+}
+
+\item{%
+    \textbf{PS}: A single (usually optional) numeric parameter, composed of one or more digits
+}
+
+\item{%
+    \textbf{Pm}: Multiple numeric parameters, separated by semi-colon. Individual values for these parameters
+    are listed with Ps (see above)
+}
+
+\item{%
+    \textbf{Pt}: A text parameter composed of printable characters
+}
+
+\end{itemize}
+
+A standard known as ECMA-48 (aka ISO 6429) specifies two types of code. \textbf{C0} is a 7-bit code, and
+\textbf{C1} is an 8-bit code. \textbf{C0} and \textbf{C1} are both subsets of C. ECMA-48 does not refer to
+\textbf{C0} or \textbf{C1} as characters, since the term character is oft confused to mean "visible glyph".
+\textbf{C0} can be any decimal from 0 to 31 and also decimals 32 and 127, and \textbf{C1} can be any integer
+from 128 to 159. \textbf{C0} control bytes are used for all sorts of purposes such as text layout, transmission
+and device control, etc. \textbf{C1} control bytes are primarily used for displays and printers. \textbf{C1}
+is the set that is related to ANSI escape sequences and VT100 terminals, and thus, the set that we are most
+interested in. ECMA-48 processes a control sequence until the sequence is terminated by a terminating byte, or
+until it finds a byte which does not belong to the sequence. Here are some examples of \textbf{C1} control
+characters:
+
+\begin{center}
+    \begin{tabularx}{\textwidth}{
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X |}
+        \hline
+        Keyboard Sequence & ASCII Character & Hexadecimal & Semantic Meaning \\
+        \hline
+        ESC D & IND & 0x84 & Represents an index \\
+        \hline
+        ESC E & NEL & 0x85 & Represents the next line \\
+        \hline
+        ESC X & SOS & 0x98 & Represents the start of a string \\
+        \hline
+        ESC [ & CSI & 0x9D & Begins a control sequence \\
+        \hline
+    \end{tabularx}
+\end{center}
+
+These are basic control characters that are used by your terminal unbeknownst to you. The curses and ncurses
+libraries are the best examples for how these control sequences are used in a practical sense. By selecting
+control sequences that manipulate the terminal output, we can create TUI applications. Let’s look at a
+practical example by changing the foreground color of your terminal’s text output. By entering the command
+printf "\textbackslash{}033[91mThis is red text\textbackslash{}n\textbackslash{}033[0m" into your terminal,
+you will see it output "This is red text" in red. Let’s break down the control sequence that we just printed.
+The first character is an escape character, which tells the terminal that we are about to print a character
+literal. 0 in C indicates an octal number, so 033 is interpreted as octal 33. Looking at an ASCII chart, we
+see that octal 33 is the ESC (escape) character. As we seen earlier, ESC followed by [ is the \textbf{C1}
+control byte to begin a control sequence (also known as \textbf{CSI} (Control Sequence Introducer) in the ANSI
+control sequence atlas). If we do a bit more digging into the XTerm specification, we find that the control
+sequence CSI \textbf{Pm m} alters character attributes. Remember that \textbf{Pm} can be a list of multiple
+parameters separated by semi-colons, and that parameters are expressed as \textbf{Ps}. The \textbf{Ps} values
+for foreground and background color may differ depending on whether or not your terminal uses 16 colors.
+Anyhow, we see that when \textbf{Ps} = 9 followed by 1, it sets the foreground to Red! We also see that 0 sets
+it back to normal. Now, say we wanted to create blinking and underlined text with a white background and black
+foreground. All we have to do is find the correct \textbf{Ps} values within the specification. The resulting
+control sequence, which you can test on your terminal is "\textbackslash{}033[4;5;90;107mBlinking, Underlined,
+FG Black, BG White\textbackslash{}n\textbackslash{}033[0m". Do a printf of that on your terminal and be
+impressed. If you’re wondering how I got the \textbf{Ps} values for \textbf{Pm}, they can be found in XTerm’s
+documentation
+\href{https://invisible-island.net/xterm/ctlseqs/ctlseqs.html\#h3-Application-Program-Command-functions}{here}.
+Another resource which I found helpful can be found
+\href{https://www.aivosto.com/articles/control-characters.html}{here}.
+
+\subsection{Int}
+
+int, short for integer, is probably the most commonly used numeric data type in C. int is another data type
+that may vary in size depending on platform. Typically, it will be 2 bytes on 32-bit platforms, and 4 bytes on
+64-bit platforms. I will be assuming that you are on a 64-bit machine for the remainder of the document,
+meaning that I will treat ints as 32-bit, but be aware that this is generally not a good assumption to make,
+especially when writing code that is cross-platform. Without specifying the sign, int is implicitly set to be
+signed. Despite this, ints can be explicitly marked as unsigned. For an int that is signed, the range is
+-2,147,483,648 to 2,147,483,647 and for unsigned, the range is 0 to 4,294,967,295. Integer literals are
+commonly represented with prefixes or with suffixes.
+
+\begin{itemize}
+
+\item{%
+    \textbf{Prefixes}: Prefixes begin at the front of a literal
+    \begin{itemize}
+
+        \item{%
+            Binary literal (base 2): Begins with '0b' e.g. 0b00001111, 0b01010101. Please note that binary
+            literals are only supported by some compilers and are not generally portable.
+        }
+
+        \item{Octal literal (base 8): Begins with '0' e.g. 0777, 0123, 0655}
+
+        \item{Hex literal (base 16): Begins with '0x' e.g. 0xFFFF, 0xC0FFEE, 0x01}
+
+    \end{itemize}
+}
+
+\item{%
+    \textbf{Suffixes}: Suffixes are placed at the end of a literal. These are dependent on the integer type.
+    Since int is technically considered to be the default integer type, it does not have its own dedicated
+    suffix. However, we can still give it the ‘u’ or ‘U’ suffix to specify that it is an unsigned int. For
+    example: unsigned int i = 100u; Note that suffixes are mostly optional. Other than a few circumstances,
+    they generally only help to add clarity.
+}
+
+\end{itemize}
+
+\subsection{Short}
+
+short is short form for "short int" (say that 5 times fast). A short int is always 2 bytes i.e. 16 bits. Note
+that on 32-bit platforms, short is the same size as an int, which basically makes short useless on 32-bit
+machines. short can also be signed or unsigned. Again, like int, it is implicitly set to be signed if no sign
+is given. The range for signed short is -32,768 to 32,767 and for unsigned its 0 to 65,535. Short can either
+be written as just "short" or "short int". For example, the following lines are equivallent:
+
+\begin{clst}
+short shrt = 10000;
+short int shrt = 10000;
+\end{clst}
+
+Same as int, a suffix of ‘u’ or ‘U’ to specify that it is an unsigned short.
+
+\subsection{Long}
+
+long is short form for "long int". A long int can be 32-bits (4 bytes) or 64-bits (8 bytes), depending on
+platform. Same as short int, long can either be written as just "long" or as "long int". longs can be signed
+or unsigned. long is implicitly signed if no sign is given. For a signed 64-bit long, the range is
+-9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 and for unsigned, it is 0 to 18,446,744,073,709,551,615!
+long has its own dedicated suffix, which is ‘l’ or ‘L’. This can be used in conjunction with ‘u’ and ‘U’. For
+example, the following line is valid:
+
+\begin{clst}
+unsigned long l = 100000000ul;
+\end{clst}
+
+\subsection{Long Long}
+
+long long was primarily designed for 32-bit machines where a long was 32-bit. Since int was also 32-bit, long
+was pretty much useless. Thus, we were given long long, or long long int, which is always 8 bytes. The range
+will still be the same as what I specified in the previous section, since I was talking about 64-bit longs.
+long long also has its own suffix ‘ll’ or ‘LL’ which can also be used with ‘u’ or ‘U’. For example:
+
+\begin{clst}
+signed long long int bignum = -999999999999LL;
+\end{clst}
+
+\subsection{Float}
+
+We are now moving away from integer types, and entering decimal types, a.k.a. floating-point integers. While
+still numeric, floating-point types do not represent themselves the same way that normal binary integers do.
+Instead, they are represented by a format called IEEE-754 by the ISO standard. Note that IEEE-754 is not the
+only method of representing decimal types (IEEE-754 is known as floating point notation, but there also exists
+something called fixed point notation, which we will not be covering here, but that I recommend you look up).
+float is short for "single-precision floating point integer". This is a fancy way of saying that it’s a 32-bit
+decimal number. floats \textit{must} be signed because the Most Significant Bit (MSB) is dedicated for storing
+the sign within their binary format according to the IEEE-754 specification. Therefore, an "unsigned float"
+would be a compile-time error. floats also have their own suffix which is ‘f’ or ‘F’. For example:
+
+\begin{clst}
+float fpl = 57.998779f;
+\end{clst}
+
+The suffix for float is the only \textit{non-optional} suffix. If you omit the suffix for float, it will be
+promoted to a double, which will occupy twice the space.
+
+\subsection{Double}
+
+doubles are also considered to be floating-point integers, however, double stands for "double precision" since
+there are twice as many bits in a double as there are in a float, (and therefore double the precision). As I
+mentioned, floating-point integers cannot be unsigned, and that still applies to doubles. doubles are 64-bits.
+Unlike float, double does not have any suffix to denote that it is a double. Akin to int, double is assumed if
+no suffix is given, even if using the keyword "float". Not much more is to be said here... There is some debate
+as to whether double is better than float. In my humble opinion, float is sufficient, and for programs which
+utilize a lot of maths, will end up saving you a lot of program space.
+
+\subsection{Long Double}
+
+The final primitive type that we’ll be discussing is the long double. long doubles can vary in length, but on
+a 64-bit machine, they are typically a whopping 128 bits (16 bytes!). long doubles share the same suffix as
+long, being ‘l’ or ‘L’. Once again, only signed is allowed. On a final note, I don’t recommend using long
+double unless absolutely necessary. It may not seem like it but allocating 16 bytes a few times can really add
+up, especially on systems with only a few MB of memory if you’re on an embedded system.
+
+\section{Creating Aliases With typedef}
+
+If you are familiar with C, it may seem an odd choice to jump straight into typedefs, but I think it will be
+important to explain them now in order to help us understand what’s happening later on. A typedef is simply an
+alias for an existing data type. "typedef" is a keyword in C, which we can use to help make our code shorter or
+easier to read. For example, take the following line:
+
+\begin{clst}
+typedef unsigned long long int ull_t;
+\end{clst}
+
+Note that the last item in the sequence is the typedef name/alias for the type preceding it. In this example,
+ull\_t is a typedef (alias) for "unsigned long long int". Typedefs are never strictly necessary, but you will
+innevitably come accross them as you use other people's libraries or APIs. A typedef can be declared almost
+anywhere in your program. Conventionally, typedefs will end with the suffix "\_t", though this is a matter of
+preference.
+
+\section{Useful Typedefs}
+
+I think it would be very beneficial to go over some pre-existing typedefs since these will come up a good
+amount throughout the duration of this document, as well as the duration of your C coding career. I will go
+over these typedefs the same way that I went over the variables beforehand, albeit in less detail. Keep in
+mind that these are just aliases.
+
+\subsection{bool (stdbool.h)}
+
+bool is short for boolean. Note that there is no built-in data type for booleans in C. bool was added in C99
+under stdbool.h (we haven’t gotten to header files yet, so don’t worry if you don’t know what I’m talking
+about). bool is actually not a typedef (hehe), it is technically a macro, but I've lumped it in here because it
+functions the same as a typedef. Although booleans only require 1 bit, C does not have any built-in types that
+are that small, thus bool occupies one byte. stdbool.h also adds definitions for true and false. true is
+equivalent to 0x01 and false is equivalent to 0x00. Using bool is a good option when you are dealing with lots
+of boolean logic and want to make your code more legible, or when you want to return true or false from a
+function rather than using a \textit{sentinel} value such as 1 or 0.
+
+\subsection{Platform Agnostic Types (stdint.h)}
+
+There are a few typedefs which allow you to create integer type variables with the exact number of bits
+requested, independent of platform. The stdint.h header file consists of the typedefs uint8\_t, uint16\_t,
+uint32\_t, and uint64\_t, as well as their signed int variants. The ‘u’ in uint stands for unsigned int, as you
+may have guessed. As I mentioned, the very nice thing about these typedefs is that they guarantee the number
+of bits that you specify on any platform. So, for example, uint16\_t will always allocate 16 bits, no matter
+what architecture. Here are the typedef definitions for each if you are curious:
+
+\begin{clst}
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
+#ifndef __uint32_t_defined
+typedef unsigned int uint32_t;
+#define __uint32_t_defined
+#endif
+#if __WORDSIZE == 64
+typedef unsigned long int uint64_t;
+#else
+__extension__
+typedef unsigned long long int uint64_t;
+#endif
+\end{clst}
+
+Don’t worry if you don’t understand what some of the lines are doing. The important part is that you
+understand that these typedefs guarantee the specified number of bits, regardless of platform/architecture.
+
+\subsection{size\_t and ssize\_t (stddef.h and sys/types.h)}
+
+size\_t and ssize\_t are very commonly used typedefs. The number of bits that it occupies will always be equal
+to the architecture size. For example, on 32-bit hardware, (s)size\_t would 32 bits, but on a 64-bit machine,
+(s)size\_t would be 64 bits. size\_t is the unsigned variant, whereas ssize\_t is the signed variant (the first
+‘s’ stands for signed). The reason people like this typedef is primarily readability. If you’re storing the
+number of bytes something occupies, or perhaps the number of items an array can hold, (s)size\_t is more
+legible than using something like int. What’s perhaps a bit confusing is the header files that these typedefs
+are defined in. size\_t is defined in stddef.h, but since ssize\_t is for some reason defined in sys/types.h.
+sys/types.h happens to include stddef.h, and stdio.h happens to include sys/types.h, so in order to access both
+of these, we just have to include stdio.h.
+
+\subsection{wchar\_t (stddef.h)}
+
+wchar\_t, which stands for "wide character" is an alternative to char. wchar\_t will have a size in bytes
+large enough to accomodate the biggest character set within the set of supported locales. Naturally, the
+standard printf() function was never designed for unicode, so there’s a bit more work that needs to be done
+in order to print unicode characters to the screen. First, we need to set a locale via setlocale(), defined in
+locale.h. This function accepts a category and a locale. The category specifies what will be affected, and the
+locale specifies the character encoding that will be used. We also need to use the wprintf() function defined
+in wchar.h rather than printf(). The code looks something like the following:
+
+\begin{clst}
+#include <wchar.h>
+#include <locale.h>
+
+int main(void) {
+    wchar_t emoji = 0x0001F600;
+
+    setlocale(LC_CTYPE, "");
+    wprintf(L"%lc\n", emoji);
+
+    return 0;
+}
+\end{clst}
+
+LC\_CTYPE specifies that we want to set the locale only for regular expressions, character classification,
+character conversion functions, and wide-character functions. The empty string indicates that we want to
+receive a locale that makes sense according to our environment. In my case, it will likely resort to using
+en\_US.UTF-8. Then we simply print the wchar using wprintf(). Note the ‘L’ prefix on the string literal. This
+indicates that each character in the string literal should be treated as a wchar\_t.
+
+\section{A Word on Man Pages}
+
+As a piece of useful advice, you can search for header files within the Linux man pages to get more information
+regarding function or typedef declarations. For example, to find out more information about bool, you can
+execute the command "man stdbool.h" in your terminal, which will provide you with a list of functions and
+typedefs that the stdbool.h header file defines. For headers which exist within a directory e.g.
+<sys/something.h> you can usually replace the '/' with an underscore e.g. "man sys\_something.h". Sometimes C
+APIs share a name with the Linux command. For example, stat is a command, whilst simultaneously being a C
+function. In order to search for the C reference, do "man 3 stat". The man command has 8 separate categories
+that it divides information into, so explicitly selecting the number 3 will get you the C reference, whereas 1
+is reserved for shell commands. If you’d like to know more about man section, see my Linux document or read
+the man page for the man command!
 
 \end{document}

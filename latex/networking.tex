@@ -1,0 +1,172 @@
+\documentclass{article}
+
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage[skip=11pt]{parskip}
+\usepackage[outputdir=/home/neil/.local/share/latex/output]{minted}
+
+\definecolor{bg}{RGB}{22,43,58}
+
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+
+\hypersetup{%
+   colorlinks=true,
+   linktoc=all,
+   linkcolor=gray,
+}
+
+\setmainfont{LiberationSans}
+\geometry{%
+  margin=1in
+}
+
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[R]{\thepage}
+\pagestyle{fancy}
+\fancypagestyle{plain}{\pagestyle{fancy}}
+
+\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+\renewcommand\maketitlehookd{\vfill\null}
+
+\title{Networking}
+\author{Neil Kingdom}
+
+\begin{document}
+
+\begin{titlingpage}
+
+\maketitle
+
+\end{titlingpage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+Whether you aspire to become a server administrator, IT technician, programmer, or even things which aren’t
+tech related, networking is a massive part of our lives now, and it’s here to stay. The internet has a very
+long history, which I will not be covering here, but that is okay because you do not need to understand how
+the internet was conceived to understand how it works. If you do happen to be someone going into a technical
+field, comprehending networking will likely be a requirement going forward in your field, since you will
+innevitably have to deal with something network related eventually.
+
+\section{Terminology}
+
+Before we really begin, I’d like to start off right away by defining certain terms that will arise often as we
+speak about networks, the internet, etc. Most of the definitions should be quite straight forward.
+
+\begin{itemize}
+
+\item{%
+    \textbf{Network:} A network is a system of connections which are linked by some form of media. In computer
+    science, networking refers to a system of connections between devices (often computers or servers) via
+    wires, light, or wave transmissions.
+}
+
+\item{%
+    \textbf{Internet:} The internet is a world-wide web (where the term www comes from in web addresses) of
+    connections between routers. The internet is how you are able to connect to anyone or anything outside of
+    your local household. Your Internet Service Provider (ISP) is in charge of linking your household to the
+    internet.
+}
+
+\item{%
+    \textbf{Intranet:} An intranet is similar to the internet, but on a much smaller scale. This is often
+    found within large companies where employees might need access to resources about the company, but may
+    still have restricted access to the internet. For example, when I worked at CRA, we had an intranet where
+    we could search for information about particular branches or sects.
+}
+
+\item{%
+    \textbf{Extranet:} A less common form of network are extranets. An extranet is simply an intranet which
+    has been extended to public use. For instance, a company may want to keep certain things within their
+    intranet private to employees, but other data may be acceptable for the public to view. The data that is
+    acceptable for the public to view would belong to the companies extranet.
+}
+
+\end{itemize}
+
+Often times, we talk about networks in terms of their size. This helps us get an idea about the scale of the
+network. The following terms apply to network areas:
+
+\begin{itemize}
+
+\item{%
+    \textbf{Peer to Peer (P2P):} Peer to peer is the smallest type of network possible – a connection between
+    two devices. P2P is a specification of the broader Personal Area Network (PAN). For example, a phone
+    connected to your car radio via bluetooth would be considered a PAN.
+}
+
+\item{%
+    \textbf{LAN:} A very common term in networking, LANs are Local Area Networks. Your household is considered
+    a LAN.
+}
+
+\item{%
+    \textbf{MAN:} Metropolitan Area Networks often refer to a neighbourhood or large building like a hotel or
+    retirement home.
+}
+
+\item{%
+    \textbf{WAN:} Wide Area Networks are very large networks. Typically, WAN refers to the internet.
+}
+
+\item{%
+    \textbf{SAN:} Storage Area Networks are often used to refer to server centers. A SAN is a connection of
+    storage devices.
+}
+
+\item{%
+    \textbf{CAN:} Campus Area Networks refer to a campus’ network like the one you may or may not be attending!
+}
+
+\end{itemize}
+
+Note: Prepending a 'W' to any of the abbreviations mentioned above means "wireless". For example, a WLAN is
+simply a wireless local area network.
+
+\begin{itemize}
+
+\item{%
+    \textbf{Client:} The client always refers to the reciever of media. The client can request data, and often
+    times send data, however, they are typically not the primary provider of the data.
+}
+
+\item{%
+    \textbf{Host:} The formal definition of a host is any computer or device connected to a network. I do not
+    really like this definition though. In computer science, the host often refers to the primary provider of
+    data. Servers are almost always hosts because they provide data to the clients that connect to them.
+}
+
+\item{%
+    \textbf{Server:} A physical device (often located in a remote location such as a special building) which
+    stores data. Servers are most often responsible for storing information about web pages or customer data.
+}
+
+\end{itemize}
+
+\section{Network Topology}
+
+A topology diagram is used to help network engineers understand the details of how a particular network is
+configured. Typically, a topology diagram has both a physical and logical counterpart. The physical diagram
+shows the network engineer where devices reside physically within a building. This might include room numbers,
+number of devices, etc. The logical diagram is usually the one we care about most. It shows an abstract
+overview of the connections between each device. This helps us see how the network is split, which devices are
+connected to which, and how the network connects to the internet if applicable.
+
+Since we wont really be concerning ourselves with physical topology diagrams in this paper, I will show you the
+various symbols that are used to represent various devices and media.
+
+\end{document}

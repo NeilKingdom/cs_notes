@@ -1,0 +1,217 @@
+\documentclass{article}
+
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage[american voltages]{circuitikz}
+\usepackage[skip=11pt]{parskip}
+
+\hypersetup{%
+   colorlinks=true,
+   linktoc=all,
+   linkcolor=gray,
+}
+
+\setmainfont{LiberationSans}
+\geometry{%
+  margin=1in
+}
+
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[R]{\thepage}
+\pagestyle{fancy}
+\fancypagestyle{plain}{\pagestyle{fancy}}
+
+\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+\renewcommand\maketitlehookd{\vfill\null}
+
+\title{Electrical Engineering}
+\author{Neil Kingdom}
+
+\begin{document}
+
+\begin{titlingpage}
+
+\maketitle
+
+\end{titlingpage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Abstract}
+
+\section{Introduction}
+
+\section{Ohm's Law}
+
+\section{Circuits}
+
+\subsection{Parallel vs Series}
+
+\section{Kirchhoff's Law}
+
+\section{Alternative vs Direct Current}
+
+\section{Passive components}
+
+We'll now take a detour from some of the more theoretical and physical laws to get a grasp of practical hands
+on concepts. This section will be focused on passive components, and the next will be focused on active
+components. Electronic components exist within every eletronics device. Not all components can be classified as
+a load because not all components necessarily consume power, however, they do affect the behaviour of current,
+voltage, and resistance. Passive components are components which cannot control electric current utilizing a
+secondary electrical signal. Active components, on the other hand (which we'll look at in a bit) can control
+the current of the circuit. For example, a type of active component known as a transistor can amplify current
+using a secondary signal. We'll begin by looking at arguably the most basic type of passive component: the
+resistor.
+
+\subsection{Resistors}
+
+A resistor is perhaps one of the most common and simple components that makeup a circuit. Resistors add
+resistance to the circuit, thus inversly reducing current. Resistors are typically placed in series next to a
+load to reduce current draw. Resistors come in various shapes and sizes, as well as ratings. Since resistors
+deal with resistance, they are measured in Ohms. The schematic symbol for a resistor can resemble either of
+the symbols below.
+
+\begin{circuitikz}
+\draw (0,0) to[ R=$R_1$ ] (2,0);
+\draw (3,0) to[ R=$R_2$, style={european resistors} ] (5,0);
+\end{circuitikz}
+
+Resistors are not polarized, meaning that they don't have a particular polarity as to how you orient them (no
+positive/anode or negative/cathode leads). The style depicted on the left is more common in North America,
+whereas you may see the style on the right used more in Europe.
+
+Most resistors are fixed, meaning that they have a resistance rating in Ohms which is the resistance that
+they'll stay at. Variable resistors, however, allow for tuning of the resistance between some range. A
+potentiometer is a device with three leads, typically used for knobs and dials, which tunes the resistance
+value and is usually intended to be operated by human intervention. A trim pot, on the other hand, is a
+similar device, but one which is typically meant to be tuned once in the factory and then left untouched. The
+schematic symbol for a variable resistor can appear as either the left or middle symbols and the right-hand
+symbol represents the symbol for a trim pot.
+
+\begin{circuitikz}
+\draw (0,0) to[ pR  ] (2,0);
+\draw (3,0) to[ vR ] (5,0);
+\draw (6,0) to[ vR, tunable end arrow={Bar} ] (8,0);
+\end{circuitikz}
+
+The left-hand symbol with the arrow pointing down is sometimes called a tap, which represents the position of
+the physical slide that affects its resistance value. Note that we could have used the European symbol for the
+resistor rather than the North American symbol for either of these, as well as the ones I'll show in the
+future, but I will be sticking with the North American version for future reference.
+
+Some more types of variable resistor which are a bit more niche, but still used in certain applications
+include the thermistor, which is a resistor that changes resistance with temperature; photoresitor, which is
+photosensitive and fluxuates with light; as well as the varistor, which changes resistance according to
+voltage. To give some examples of where these are used: thermistors are used in 3D printers to sense the
+temperature of the hotend and varistors are used for surge protection, typically in conjunction with a fuse to
+mitigate the damage done to a circuit when high levels of voltage are applied. From left to right, I've laid
+out the thermistor, photoresistor, and varistor schematic symbols for you.
+
+\begin{circuitikz}
+\draw (0,0) to[ thR ] (2,0);
+\draw (3,0) to[ ldR ] (5,0);
+\draw (6,0) to[ mov ] (8,0);
+\end{circuitikz}
+
+To provide some more nuance, the schematic symbol I've actually used for the varistor is the symbol for a
+metal-oxide varistor A.K.A. a MOV, which is likely the most common type you'll see. Another thing to note is
+that thermistors come in two forms: Positive Termperature Coefficient (PTC) and Negative Temperature
+Coefficient (NTC). PTC means that resistance increases as temperature increases, and vice versa for NTC. Also
+note the two diagonal arrows pointing towards the photoresistor. These represent photons or light, and can be
+used for other components to signify that the component is photosensitive. Arrows pointing the opposite
+direction indicate that the component is light-emitting, which we'll come to see with LEDs.
+
+\subsection{Capacitors}
+
+Similar to resistors, capacitors are another simple, yet crucial and commonly used component within electronic
+circuits. A capacitor, as the name suggests, has some capacitance for current, which builds incrementally
+before eventually discharging. Capacitors are typically used to dampen or smooth electrical impedance or
+sudden spikes in current due to various factors. They are also commonly used in timer circuits or placed in
+series with switches to reduce the risk of what's known as bouncing, whereby a switch or button registers
+multiple inputs even though the operator only intended to input one press.
+
+To get a bit more technical, capacitors are made up of two metal plates which sandwich the dielectric. The
+dielectric is a material or fluid which stores the energy between the voltage differential. The dielectric is
+typically either a fluid containing electrolyte, which is where we get the term elecrolytic capacitors, or it
+will be ceramic, hence the term ceramic capacitors. These two have pros and cons which I won't get into such
+as size, heat tolerance, etc. The primary difference, however, is that elecrolytic capacitors have a polarity,
+whereas ceramic capacitors do not. Sometimes we refer to non-polarized capacitors as "fixed" capacitors.
+Similar to resistors, we can also have variable capacitors which can alter their capacitance. Below you'll see
+the symbols for fixed (left) and polarized capacitors (middle and right).
+
+\begin{circuitikz}
+\draw (0,0) to[ C=$C_1$ ] (2,0);
+\draw (3,0) to[ eC=$C_2$ ] (5,0);
+\draw (6,0) to[ cC=$C_3$ ] (8,0);
+\end{circuitikz}
+
+There exist other variations for electrolytic capacitors as well, though they are all fairly similar to the
+ones depicted above. A variable resistor, as well as any component with a variable quantity will use the same
+arrow that we used for variable resistors, and likewise for the trimmer capacitor, which are both depicted
+below.
+
+\begin{circuitikz}
+\draw (0,0) to[ vC ] (2,0);
+\draw (3,0) to[ vC, tunable end arrow={Bar} ] (5,0);
+\end{circuitikz}
+
+Note that for several variable components, we sometimes see them being "ganged" A.K.A. "linked", meaning that
+the changes applied to one component will cause the same effect to occur in the other. We denote that two
+variable components are ganged together using a dashed line to connect the bottom of the arrow as illustrated
+below for the two ganged variable capacitors.
+
+\begin{circuitikz}
+\draw (0,0) to[ vC=$VC1A$, n=A ] (1.5,0);
+\draw (2,0) to[ vC=$VC1B$, n=B ] (3.5,0);
+\draw[dashed] (A.wiper) -- (B.wiper);
+\end{circuitikz}
+
+\subsection{Inductors}
+
+\subsection{Transformers}
+
+\section{Active Components}
+
+\subsection{MOSFETs}
+
+\subsection{Transistors}
+
+\section{Rectifiers}
+
+\section{Electromagnatism}
+
+\subsection{Eddy Currents}
+
+\section{Operational Amplifiers}
+
+\section{Through-Hole vs Surface Mount}
+
+\section{Semiconductors}
+
+\section{Integrated Circuits}
+
+\subsection{IC Package Types}
+
+\subsection{System on a Chip}
+
+\section{Pulse-Width Modulation}
+
+\section{Motors}
+
+\subsection{DC Brush Motor}
+
+\subsection{Brushless DC Motor}
+
+\end{document}

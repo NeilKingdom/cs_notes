@@ -73,8 +73,80 @@
 Similar to my computer graphics notes, I wrote this document partially out of my own self-interest, but also
 to provide you with some foundational knowledge for the mechanics and maths required to compute sound. Audio
 in and of itself is actually a huge domain, especially when it comes to computer science. I hope that, seeing
-as this is not likely something you were taught in school or elsewhere, that this is an engaging topic.
+as this is not likely something you were taught in school or elsewhere, this will be an engaging topic.
 
 \section{Introduction}
+
+Music has been around for quite some time, and as it turns out, people seem to like it. What's interesting is
+that we can very ellegantly describe the noises we perceive using physics. As you're most probably aware if
+you've passed highschool, noise is caused by the vibrating of air molecules at a certain frequency. The
+cohclea i.e., eardrum, vibrates in turn, which transmits a signal to the brain and so forth. Music happens to
+be deeply rooted in math, whether it be musical scales, chords, time signatures, etc. We won't really be
+getting into musical theory here, because I'm no musical expert, but I can hopefully help give you a different
+perspective on music and how we learned to process it digitally.
+
+\section{Amplitude and Pitch}
+
+If you're not comfortable with maths involving sinusoidal waves, I suggest you learn that first and come back
+to this later, because we will be dealing with sin waves a lot. I will try to explain these concepts at a
+pretty basic level, but I will at least be assuming you're familiar with the unit circle, radians, pi, and these
+sorts of things.
+
+Assuming you are familiar with sin waves, let me help refresh your memory a bit. In audio processing, amplitude
+refers to volume. The higher the amplitude, the louder the sound. When dealing with sinusoidal waves, increasing
+the amplitude corresponds to increasing the distance between the peaks and valleys of the wave (to put it in
+laymans terms). Frequency in audio refers to the pitch of the tone i.e. how high pitched or deep the tone
+sounds. Notes were created on the basis of fractional ratios called the diatonic scale, which use intervals
+of perfect fifths. This is how we get the seemingly odd arrangement of white and black keys on a piano. In
+short though, notes are just specific frequencies which are each some equal ratio apart.
+
+\section{Frequency}
+
+As we discussed, frequency corresponds to pitch. Frequency in the mathematical sense is a measurement which
+uses units called Hertz (Hz). It is the measure of cycles per second. Frequency is used to measure many things
+apart from just pitch, as it can also be used to measure the oscillation of an electronic signal generator for
+example.
+
+Imagine that we have the function f(x) = sin(x). Imagine now that x is the number of seconds that have
+transpired (maybe it would have been better to use t instead of x, but you get the point). This poses a problem,
+because after a single cycle, x will be 2pi. Since we work with Hertz in audio processing, the first step is
+to alter the frequency of our sin wave such that each cycle takes one second. We do this by multiplying x by
+2pi, which normalizes the frequency e.g. f(x) = sin(x * 2pi).
+
+\subsection{Sample Rate}
+
+\section{Replicating Sound Electronically}
+
+\subsection{Wave Carriers}
+
+\subsection{Modulation}
+
+\subsection{Converting Between Analog and Digital}
+
+\section{Chip Tunes}
+
+\subsection{Square Waves}
+
+\subsection{Sawtooth Waves}
+
+\subsection{Triangle Waves}
+
+\subsection{Sawtooth Waves}
+
+\section{Sinks/Sources}
+
+\section{Channels}
+
+\section{Mixing}
+
+\section{Fourier Series}
+
+\section{Fourier Transform}
+
+\section{Fast Fourier Transform (FFT)}
+
+\section{MIDI}
+
+\section{Envelopes}
 
 \end{document}

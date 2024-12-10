@@ -401,9 +401,10 @@ the DOM.
 
 The useState hook is by far the most common. It is used for creating a state variable. We can give this state
 variable an initial value, which is what the component will render on its initial load. Using the setter that
-useState provides, we can also update the state variable, thus in turn updating any components which rely on
-it. As with most hooks, useState returns an array containing both the state variable and setter for said
-variable. We tend to use array deconstruction to perform multiple assignment as seen in the code snippet below:
+useState provides, we can also update the state variable, which has the side-effect of rehydrating the outer
+component. As with most hooks, useState returns an array containing both the state variable and setter for
+said variable. We tend to use array deconstruction to perform multiple assignment as seen in the code snippet
+below:
 
 \begin{tslst}
 
@@ -418,7 +419,100 @@ same name as the state variable but is prepended with 'set', as is the normal co
 
 \subsection{useEffect}
 
+The useEffect hook is very similar to the useState hook, but it is a bit more powerful. The useEffect hook
+accepts an array of dependencies. These dependencies can be other React components, or they can be variables,
+such as state variables created with the useState hook (or regular variables too). The function bound to
+useEffect will run at least once after the outer component renders for the first time. If the dependency list
+is not empty, then the function will be reinvoked anytime a dependency changes. We can also optionally return
+a callback which will be executed once the dependencies are unmounted. This return callback is only really
+useful when using something like a timer that needs to be cleaned up once it expires. Here's an example of
+useEffect:
+
+\begin{tslst}
+
+import React, { useState, useEffect } from "react";
+
+export function App(props) {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        console.log("A dependency was updated");
+    }, [count]); // Dependency list
+
+    return (
+        <div>
+            <input value={`Count: ${count}`} type="submit" onClick={() => setCount(count + 1)}></input>
+        </div>
+    );
+}
+
+\end{tslst}
+
 \subsection{useContext}
+
+The useContext hook is used to setup context objects. A context object will usually manage some global state
+which needs to be shared throughout the application. A good example of this is managing a color pallette that
+will be applied to components throughout the application. This color pallette may need to be updated on the fly
+to support a light and dark theme. A context object is definitely the way to go in this case. The way this
+works can be a bit confusing at first, but it's not too bad. We need to create two things: the context object,
+as well as the context provider. The context object manages the state, while the provider distributes it to all
+child components starting at the top of the DOM. Here's how we might setup a context object to keep track of
+the score in a game:
+
+\begin{tslst}
+
+// GameContext.tsx
+import { createContext, useState } from React;
+
+export const GameContext = createContext(null); // null means no pre-existing state that we're borrowing
+
+export const GameProvider = ({ children }) => {
+    const [score, setScore] = useState(0);
+
+    const incrementScore = () => {
+        setScore((prevScore) => prevScore + 1);
+    };
+
+    return (
+        <GameContext.Provider value={{ score, incrementScore }}>
+            { children }
+        </GameContext.Provider>
+    );
+}
+
+// Game.tsx
+import { useContext } from React;
+import { GameContext } from 'GameContext'
+
+const Game(props) => JSX.Element {
+    const { score, incrementScore } = useContext(GameContext); // Access GameContext
+
+    if (playerScoredGoal) {
+        incrementScore();
+    }
+
+    return (
+        <div>
+            <h1>Score: {score}</h1>
+        </div>
+    );
+}
+
+// App.tsx
+import { GameProvider } from 'GameContext'
+
+const App(): JSX.Element {
+    // Wrap all children in the GameProvider
+    return (
+        <GameProvider>
+            <Game />
+        </GameProvider>
+    );
+};
+
+export default App;
+
+\end{tslst}
 
 \subsection{useDeferredValue}
 
@@ -430,15 +524,16 @@ The ECMA Script linter (eslint) is a static code analysis tool which enforces pr
 standards. ESLint is not really intended to catch semantic errors so much as it is meant to catch poor code
 habits. It can enforce things like spacing, indentation, etc.
 
-\section{Async Await}
+\section{Concurrency in Typescript}
 
 JavaScript introduced the concept of promises and futures. I've spoken about promises and futures in many of my
 other programming language documents, but to summarize, promises and futures are an asynchronous idiom. Async
-code does not run parallel like with multithreading, but it does run concurrently. Async portions of code are
-categorized into coroutines. The cpu is able to perform context switching to jump between coroutines and
-process code without blocking for a specific line to finish execution. A function marked with the async
-keyword must return a Promise<T>. Let's first look at how we used to use promises and futures before moving on
-to the async await syntax so that we can get a better idea of what's happening behind the scenes.
+code does not run parallel like with multithreading, but it does run concurrently. This is a requirement for
+JavaScript, since the JIT is single-threaded. Async portions of code are categorized into coroutines. The cpu is
+able to perform context switching to jump between coroutines and process code without blocking for a specific
+line to finish execution. A function marked with the async keyword must return a Promise<T>. Let's first look
+at how we used to use promises and futures before moving on to the async await syntax so that we can get a
+better idea of what's happening behind the scenes.
 
 Assume you have some function that pulls data from a database and might take an extended period of time to run.
 We can simulate this wait time using setTimeout(). Let's take a look at the following code snippet, which will
@@ -462,11 +557,13 @@ function fetchData(url: string): Promise<string> {
 
 In the code above, we return a string wrapped in a Promise object. When using the new keyword when constructing
 a Promise object, it will expect a function with the resolve and reject parameters. These are functions which
-are used to specify whether a task completed successfully (resolve) or failed (reject). When invoking an async
-function, it is common to chain the then() and catch() methods rather than using try-catch blocks.
+are used to specify whether a task completed successfully (resolve) or failed (reject). We can handle promises
+in various ways, but the most common are to use the then() and catch() functions, or to use the async/await
+keywords within a try-catch block. Here is an example of both:
 
 \begin{tslst}
 
+// With then() and catch()
 fetchData("My SQL query")
     .then((response) => {
         console.log(response);
@@ -475,10 +572,21 @@ fetchData("My SQL query")
         console.error(error);
     });
 
+// With async/await
+const fetchDataAsync = async () => {
+    try {
+        const response = await fetchData("My SQL query");
+        console.log(response);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 \end{tslst}
 
-Unfortunately promises/futures end up becoming quite messy and cumbersome to read. The async/await keywords
-provide syntactic sugar over top of promies/futures to make code read as though it it's procedural, even if
-it's not.
+Note that in the async/await version, we need to wrap any code which uses the await keyword in an async block.
+In this case, we create a fetchDataSync variable which is assigned an anonymous async lambda expression. This
+lambda expression wraps the call to fetchData in a try-catch block since it needs to be awaited. If the await
+fails, an exception will be thrown, and we'll end up in the catch block.
 
 \end{document}

@@ -57,7 +57,7 @@
 \renewcommand\maketitlehooka{\null\mbox{}\vfill}
 \renewcommand\maketitlehookd{\vfill\null}
 
-\title{The C Programming Langauge}
+\title{The C Programming Language}
 \author{Neil Kingdom}
 
 \begin{document}
@@ -467,5 +467,72 @@ function. In order to search for the C reference, do "man 3 stat". The man comma
 that it divides information into, so explicitly selecting the number 3 will get you the C reference, whereas 1
 is reserved for shell commands. If you’d like to know more about man section, see my Linux document or read
 the man page for the man command!
+
+\section{Preprocessor Directives}
+
+I will now spend a long time talking about preprocessor directives, which will probably confuse you,
+but that’s okay. We haven’t delved deep into how the compiler works at this point, and I’d like to keep it
+that way for now, but there is one thing that I must quickly explain in layman’s terms. The compiler has
+several  stages in its pipeline, and the first of those stages is known as pre-processing. Pre-processing
+happens before the actual compilation of the program. In essence, the pre-processor will parse the file for
+special statements called pre-processor directives. Pre-processor directives start with the hash symbol ‘\#’
+(the correct name for the hash or pound symbol is an octothorp)! These lines will be processed as commands
+prior to all other lines in the source file. Unlike regular code statements, you should not end pre-processor
+directives with a semi-colon unless you know what you’re doing. Here are a few common pre-processor directives:
+
+\begin{itemize}
+    \item{\textbf{\#define:} Substitutes a preprocessor macro.}
+
+    \item{\textbf{\#undef:} Undefines a preprocessor macro.}
+
+    \item{\textbf{\#if:} An conditional statement ran during the preprocessing phase.}
+
+    \item{\textbf{\#elif:} Equivallent to an else-if statement, but ran during the preprocessing phase.}
+
+    \item{\textbf{\#else:} Equivallent to an else statement, but ran during the preprocessing phase.}
+
+    \item{\textbf{\#endif:} Terminates a conditional \#if block.}
+
+    \item{\textbf{\#ifdef:} Short form for \#if defined(x).}
+
+    \item{\textbf{\#ifndef:} Short form for \#if !defined(x).}
+
+    \item{\textbf{\#error:} Prints an error message to stderr during the preprocessing phase.}
+
+    \item{\textbf{\#pragma:} Issues special commands to the compiler during the preprocessing phase.}
+\end{itemize}
+
+Using these directives appropriately is an art that is difficult to master. Let’s begin by going through them
+sequentially. I will be grouping some directives together such as \#if, \#elif, and \#else for example.
+
+\subsection{\#define}
+
+Aside from \#include, \#define is the directive that you will see used most and will be most beneficial to you.
+\#define will create what’s known as a macro, which is sort of like a label that expands to whatever text you
+provide it. Macros don’t take up any physical address space in RAM because they are not actually variables
+that get initialized anywhere. The \#define directive takes in two "parameters": the name of the macro, and the
+macro’s assigned value. For example, we might be interfacing with a device where the I/O has been
+memory-mapped to a specific address in RAM. In order to read/write to/from this port, we can define the base
+address like so:
+
+\begin{clst}
+#define PORTA 0x2000
+\end{clst}
+
+In this case, whenever C comes across the macro PORTA, it is substituted with the literal text "0x2000".
+\#define can be dangerous because we can do things that are not permitted/defined within the C specification.
+For example, we can define our own opening and closing curly braces (please don't do this)!!!
+
+\begin{clst}
+#define OPEN_BRACE {
+#define CLOSE_BRACE }
+
+if (true) OPEN_BRACE
+// Do something
+CLOSE_BRACE
+\end{clst}
+
+Notice that the standard for macros is to make them capitalized. While it is not required to capitalize
+macros, it is still heavily encouraged for the purposes of readability and avoiding namespace clashing.
 
 \end{document}

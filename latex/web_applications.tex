@@ -177,27 +177,28 @@ Let's break this down:
    \begin{itemize}
 
    \item{%
-      \textbf{Scheme/Protocol:} This is the method for fetching the resource e.g. HTTP
+      \textbf{Scheme/Protocol:} This is the protocol used for fetching the resource e.g. HTTP
    }
 
    \item{%
       \textbf{Authority} Consists of the host and the port number. The host is further divided
       into the subdomain (usually www), the domain name, and the top-level domain
-      (e.g .org, .gov, .com, etc.). An example of an authority would be www.example.org:8080.
+      (e.g., .org, .gov, .com, etc.). An example of an authority would be www.example.org:8080.
    }
 
    \item{%
       \textbf{Path} The host name resolves to the root directory on the web server. The path is a
-      relative path from the root directory to the resource that is actually being acquired.
+      relative path from the root directory to the location of the website's contents. This will usually
+      contain static pages in HTML and CSS, as well as any JS scripts, media resources, etc.
    }
 
    \item{%
-      \textbf{Query} Queries are an optional list of parameters that proceed the question mark in
+      \textbf{Query} Queries are an optional list of parameters that trail the question mark in
       the URI and are separated by an ampersand.
    }
 
    \item{%
-      \textbf{Fragment} The fragment is an optional sub-resource that proceeds the hash mark.
+       \textbf{Fragment} The fragment is an optional sub-resource that trails the octothorp/hash (#).
    }
 
    Example URI: http://www.example.org:8080/path/to/resource?param=value\&a=5\#paragraph3
@@ -212,7 +213,7 @@ Let's break this down:
 \item{%
    \textbf{CRLF:} CRLF stands for carriage-return followed by line-feed. Linux typically only uses
    line-feeds for separating text (e.g. \textbackslash{}n), but NTFS on Windows uses CRLF
-   (\textbackslash{}r\textbackslash{}n) which is also what the HTTP request uses.
+   (\textbackslash{}r\textbackslash{}n) which is also what HTTP requests use.
 }
 
 \item{%
@@ -389,8 +390,8 @@ browser, go to localhost:8080. In case you're not aware, localhost resolves to y
 should be 127.0.0.1. As you should also know, port 80 is the standard port for HTTP and port 443 is the
 standard port for HTTPS. Port numbers under 1000 are reserved and can easily conflict with other applications,
 thus requiring superuser privileges to execute applications on. A common port that people use to avoid this
-conflict is 8080, but you may choose any port you'd like. You sould receive in the browser some text saying
-Hello from server. In the server application, you can view the HTTP requests similar to the functionality of
+conflict is 8080, but you may choose any port you'd like. You should receive in the browser some text saying
+"Hello from server". In the server application, you can view the HTTP requests similar to the functionality of
 curl. There will likely be multiple requests because your browser will try to fetch multiple things. For
 example, the first request for me specifies root (/) as the URI, followed by /favicon.ico as the URI for the
 second request. ico files are used to display the icon on the tab for the current webpage and the default name
@@ -614,8 +615,8 @@ that need to be followed in order for a web API to be considered RESTful:
 
 \subsection{Bootstrap}
 
-\subsection{SASS}
-
 \subsection{Tailwind}
+
+\subsection{SASS}
 
 \end{document}

@@ -89,26 +89,26 @@ The C programming language is primarily attributed to a programmer named Dennis 
 to associate C with operating systems – a) because it is a good language for interfacing with low level
 hardware, and b) because of the success of Unix/Linux, which were both written in C. The Unix operating system
 was created in the 1960s in Bell Laboratories (Bell Labs for short). Unix was originally written in assembly
-language, but in 1973 Unix was rewritten by Dennis Ritchie and Ken Thompson. Brian Kernighan also played a big
-role in the history of C and Unix, but never became quite as iconic as the duo that were Richie and Thompson.
-In the 1980s, the POSIX standard was invented to help standardize Unix systems, as there were many companies
-who were making their own forks of Unix such as Sun Microsystems (later aquired by Oracle). As you probably
-know, Linus Torvalds eventually created the Linux kernel, which was heavily based off Unix and is still being
-maintained by Linus and the Linux community to this very day. The C programming language was inspired by
-languages like B, PASCAL, and FORTRAN. C has had many releases over the years. The first release was called
-K\&R (Ken and Ritchie). K\&R had very sloppy documentation, and only covered what Brian and Dennis felt was
+language, but in 1973 Unix was rewritten by Dennis Ritchie and Brian Kernighan. Another important figure who
+also worked at Bell Labs on Unix was Ken Thompson. Ken Thompson was the founder of the B language, which C
+was based off. In the 1980s, the POSIX standard was invented to help standardize Unix systems, as there were
+many companies who were making their own forks of Unix such as Sun Microsystems (later aquired by Oracle). As
+you probably know, Linus Torvalds eventually created the Linux kernel, which was heavily based off Unix and is
+still being maintained by Linus and the Linux community to this very day. C has had many releases over the
+years. The first release was called K\&R (Kernighan and Ritchie), based off the C Programming Language book
+that they co-authored. K\&R had very sloppy documentation, and only covered what Brian and Dennis felt was
 necessary to document. K\&R also permitted a lot of undefined behaviour which meant that writing certain code
 on one system might have completely different effects from another. It wasn’t until 1989 that we got ANSI C,
 also known as C89. The American National Standards Institute (ANSI) created a standard specification of C;
 something that programmers and compiler engineers could unanimously appeal to. ANSI C still wasn’t perfect,
 however. In 1990, the International Organization for Standardization (ISO - not to be confused with the file
-format) created another specification of C known as ISO/IEC 9899:1990, aka. C90. C89 and C90 are essentially
+format) created another specification of C known as ISO/IEC 9899:1990, a.k.a. C90. C89 and C90 are essentially
 the same standard, which is why C90 is usually overlooked. In 1995, the ISO published an extension to C90
 which added some new features. This specification was called ISO/IEC 9899/AMD1:1995, or simply, C95. In 2000,
 ANSI adopted the ISO/IEC 9899:1999 standard aka C99. In 2011, another revision, informally known as C1X was
-created aka C11. The newest release to date is C23, which again, adds a few keywords and features. The GNU
-project has their own variants for each of these standardizations to coincide with glibc (which I’ll cover in
-a bit).
+created (a.k.a. C11). The newest release to date is C23, which again, adds a few keywords and features. The
+GNU project has their own variants for each of these standardizations to coincide with glibc (which I’ll cover
+later in this document).
 
 \section{Data Types}
 
@@ -166,7 +166,7 @@ control sequences:
 }
 
 \item{%
-    \textbf{PS}: A single (usually optional) numeric parameter, composed of one or more digits
+    \textbf{Ps}: A single (usually optional) numeric parameter, composed of one or more digits
 }
 
 \item{%
@@ -311,7 +311,7 @@ will still be the same as what I specified in the previous section, since I was 
 long long also has its own suffix ‘ll’ or ‘LL’ which can also be used with ‘u’ or ‘U’. For example:
 
 \begin{clst}
-signed long long int bignum = -999999999999LL;
+long long int bignum = -999999999999LL;
 \end{clst}
 
 \subsection{Float}
@@ -364,7 +364,7 @@ typedef unsigned long long int ull_t;
 
 Note that the last item in the sequence is the typedef name/alias for the type preceding it. In this example,
 ull\_t is a typedef (alias) for "unsigned long long int". Typedefs are never strictly necessary, but you will
-innevitably come accross them as you use other people's libraries or APIs. A typedef can be declared almost
+innevitably come across them as you use other people's libraries or APIs. A typedef can be declared almost
 anywhere in your program. Conventionally, typedefs will end with the suffix "\_t", though this is a matter of
 preference.
 
@@ -393,25 +393,9 @@ requested, independent of platform. The stdint.h header file consists of the typ
 uint32\_t, and uint64\_t, as well as their signed int variants. The ‘u’ in uint stands for unsigned int, as you
 may have guessed. As I mentioned, the very nice thing about these typedefs is that they guarantee the number
 of bits that you specify on any platform. So, for example, uint16\_t will always allocate 16 bits, no matter
-what architecture. Here are the typedef definitions for each if you are curious:
-
-\begin{clst}
-typedef unsigned char uint8_t;
-typedef unsigned short int uint16_t;
-#ifndef __uint32_t_defined
-typedef unsigned int uint32_t;
-#define __uint32_t_defined
-#endif
-#if __WORDSIZE == 64
-typedef unsigned long int uint64_t;
-#else
-__extension__
-typedef unsigned long long int uint64_t;
-#endif
-\end{clst}
-
-Don’t worry if you don’t understand what some of the lines are doing. The important part is that you
-understand that these typedefs guarantee the specified number of bits, regardless of platform/architecture.
+what architecture. There also exists a pointer type for allocating the correct amount of memory to store
+pointer addresses since this will differ on 32-bit vs 64-bit machines. For example, intptr\_t and uintptr\_t
+will allocate the proper amount of memory for a pointer to an int or unsigned int, respectively.
 
 \subsection{size\_t and ssize\_t (stddef.h and sys/types.h)}
 
@@ -455,7 +439,7 @@ receive a locale that makes sense according to our environment. In my case, it w
 en\_US.UTF-8. Then we simply print the wchar using wprintf(). Note the ‘L’ prefix on the string literal. This
 indicates that each character in the string literal should be treated as a wchar\_t.
 
-\section{A Word on Man Pages}
+\section{Quick Note on Man Pages}
 
 As a piece of useful advice, you can search for header files within the Linux man pages to get more information
 regarding function or typedef declarations. For example, to find out more information about bool, you can
@@ -468,7 +452,7 @@ that it divides information into, so explicitly selecting the number 3 will get 
 is reserved for shell commands. If you’d like to know more about man section, see my Linux document or read
 the man page for the man command!
 
-\section{Preprocessor Directives}
+\section{Pre-processor Directives}
 
 I will now spend a long time talking about preprocessor directives, which will probably confuse you,
 but that’s okay. We haven’t delved deep into how the compiler works at this point, and I’d like to keep it
@@ -481,15 +465,15 @@ prior to all other lines in the source file. Unlike regular code statements, you
 directives with a semi-colon unless you know what you’re doing. Here are a few common pre-processor directives:
 
 \begin{itemize}
-    \item{\textbf{\#define:} Substitutes a preprocessor macro.}
+    \item{\textbf{\#define:} Substitutes a pre-processor macro.}
 
-    \item{\textbf{\#undef:} Undefines a preprocessor macro.}
+    \item{\textbf{\#undef:} Undefines a pre-processor macro.}
 
-    \item{\textbf{\#if:} An conditional statement ran during the preprocessing phase.}
+    \item{\textbf{\#if:} An conditional statement ran during the pre-processing phase.}
 
-    \item{\textbf{\#elif:} Equivallent to an else-if statement, but ran during the preprocessing phase.}
+    \item{\textbf{\#elif:} Equivallent to an else-if statement, but ran during the pre-processing phase.}
 
-    \item{\textbf{\#else:} Equivallent to an else statement, but ran during the preprocessing phase.}
+    \item{\textbf{\#else:} Equivallent to an else statement, but ran during the pre-processing phase.}
 
     \item{\textbf{\#endif:} Terminates a conditional \#if block.}
 
@@ -497,21 +481,21 @@ directives with a semi-colon unless you know what you’re doing. Here are a few
 
     \item{\textbf{\#ifndef:} Short form for \#if !defined(x).}
 
-    \item{\textbf{\#error:} Prints an error message to stderr during the preprocessing phase.}
+    \item{\textbf{\#error:} Prints an error message to stderr during the pre-processing phase.}
 
-    \item{\textbf{\#pragma:} Issues special commands to the compiler during the preprocessing phase.}
+    \item{\textbf{\#pragma:} Issues special commands to the compiler during the pre-processing phase.}
 \end{itemize}
 
 Using these directives appropriately is an art that is difficult to master. Let’s begin by going through them
-sequentially. I will be grouping some directives together such as \#if, \#elif, and \#else for example.
+sequentially. I will be grouping some directives together such as \#if, \#elif, and \#else, for example.
 
 \subsection{\#define}
 
 Aside from \#include, \#define is the directive that you will see used most and will be most beneficial to you.
 \#define will create what’s known as a macro, which is sort of like a label that expands to whatever text you
-provide it. Macros don’t take up any physical address space in RAM because they are not actually variables
-that get initialized anywhere. The \#define directive takes in two "parameters": the name of the macro, and the
-macro’s assigned value. For example, we might be interfacing with a device where the I/O has been
+provide afterwards. Macros don’t take up any physical address space in RAM because they are not actually
+variables that get initialized anywhere. The \#define directive takes in two "parameters": the name of the
+macro, and the macro’s assigned value. For example, we might be interfacing with a device where the I/O has been
 memory-mapped to a specific address in RAM. In order to read/write to/from this port, we can define the base
 address like so:
 
@@ -534,5 +518,346 @@ CLOSE_BRACE
 
 Notice that the standard for macros is to make them capitalized. While it is not required to capitalize
 macros, it is still heavily encouraged for the purposes of readability and avoiding namespace clashing.
+
+\subsection{\#include}
+
+\#include is the most commonly used preprocessor directive, since it is required within nearly every source
+file that you write. Again, we haven't discussed header files yet, but let's just say that they are essentially
+files which contain definitions about certain variables and functions. The \#include directive is used to
+include these files into our code. \#include takes one "argument", which is the .h file that we are including.
+There are two options for how we include them. One is to use angle brackets (<>) and the other is to use
+parentheses (""). Angle brackets indicate that the header file can be found in a location on the host system
+that belongs to the compiler's lookup path. On linux, the linker first searches the \$LD\_LIBRARY\_PATH
+environment variable, followed by the \$PATH variable (see the man page for ld to get a more accurate list of
+directories that the linker searches). Angle brackets are typically used for header files that are already
+installed on your system due to being commonly used by other programs (e.g., header files that belong to the C
+runtime library). The parentheses indicate that you'd like to manually enter the path. This path can be a full
+path starting from your root directory, otherwise, the program will assume a relative path starting from the
+directory of the .c file in which \#include was used. For example:
+
+\begin{clst}
+// Common header file that belongs to libc. Probably exists under /usr/shared/lib
+#include <stdio.h>
+// Relative path. Header file likely belongs to your project
+#include "../../header.h"
+\end{clst}
+
+One final note about the \#include directive is that this does not "import" code in the same manner as a
+language like Java. The contents of header files that are included with \#include get substituted in-place
+i.e., at the location of the \#include directive. In other words, \#include essentially copies all the code in
+the header file and pastes it into the source file. Considering that \#include is a preprocessor directive,
+this means that no semantic analysis takes place when the file is inserted. In other words, C will not
+complain if we include any file that exists on the system until we actually try to compile. Due to the fact that
+the \#include is effectively a glorified paste command, it is actually possible to \#include C source files,
+which is a valid strategy that we'll look into later. We will certainly review this pre-processor directive more
+once we get to header files, but hopefully you now have a general idea of how it works.
+
+\subsection{\#undef}
+
+The \#undef pre-processor directive, as you may have guessed, undefines a macro that was previously defined.
+The use cases for \#undef are a bit niche, but there are certainly appropriate times to use it. The danger
+with \#undef is that it allows us to re-define macros, which can be dangerous if not used with caution. Here's
+an example of what you generally should not do:
+
+\begin{clst}
+// I do not condone the following code
+#define SOME_FLAG 0
+#undef SOME_FLAG
+...
+#define SOME_FLAG 1
+\end{clst}
+
+If you genuinely intend to undefine the macro, and don't plan on redefining it again, then \#undef is
+perfectly fine to use. And perhaps, if you are very cautious, I would even go as far as to say that it's okay
+to \#define, \#undef, and \#define again, so long as the second \#define sets the macro back to its original
+value. In general, if you find yourself reaching for this pre-processor directive, ask yourself whether there
+might be a better way of handling the issue before hastly slapping \#undef everywhere.
+
+\subsection{\#ifdef and \#ifndef}
+
+\#ifdef and \#ifndef are really nice pre-processor directives because they allow us to check whether a macro has
+been defined or not. In conjunction with \#define and \#undef, this can become very useful. This is commonly
+used to branch into specific portions of code depending upon the user's OS, or based on certain build options.
+We will be going over something called include guards, which use these directives, as well as a few other
+pre-processor idioms after I'm finished explaining all the directives. The only thing that you should know for
+now is that \#ifdef returns true if the macro provided is defined, and \#ifndef returns true if the macro
+provided is \textit{not} defined.
+
+\subsection{\#if, \#elif, \#else, \#endif}
+
+These 4 directives are equivalent to if, else if, and else. No matter how many \#ifs or \#elifs are used, an
+\#if directive must always close with \#endif. Once again, this is useful for blocking and controlling certain
+segments of code. We will also be going over examples in a bit.
+
+\subsection{\#error}
+
+The moment that \#error is reached, the program is aborted, and the error message supplied after abort is
+printed to stderr. This is probably a good time to talk about how we can have multi-line pre-processor
+directives. Since newline characters normally signify the end of a preprocessor directive, we must use the
+backslash '\' to indicate that we want to continue the next line. For example:
+
+\begin{clst}
+#error This is a very long error message\
+    that i am printing to stderr
+\end{clst}
+
+Note that the backslash allows us to continue the preprocessor directive onto the next line. This can aid with
+readability if you have a very long argument. Something very important to note is that adding an additional
+space after the backslash will cause the newline to remain, which can lead to code that is extremely hard to
+debug! For this reason, I recommend that you have your text editor remove trailing whitespace. Most editors
+have a setting to enable this feature, or if you are using something like [Neo]Vim, there are autocommands
+which can remove trailing whitespace on write.
+
+\subsection{\#pragma}
+
+\#pragma might just have to be a whole guide on its own, but it's okay because it's not great to rely on it in
+the first place. \#pragma actually has a bunch of subcommands called "pragma directives" that do extra work
+within the pre-processor. Pre-processor directives are not always enough to do everything that we want, so
+pragma directives can grant additional control. The reason I say that it's not great to rely on it is because
+the sub-directives that are available to you is heavily dependent upon the compiler that you are using.
+Generally, the only time I use the \#pragma directive is for suppressing compiler warnings that I don't care
+to see. The three major C compilers are GCC (GNU foundation), Clang (LLVM), and MSVC (Microsoft).
+
+\section{Pre-Defined Macros}
+
+Compilers which conform to modern language standards ought to implement some of the following pre-defined
+macros, which are available for use in your code. When the compiler defines a symbol internally, we call this
+a "compiler intrinsic". In fact, a lot of functions that you utilize in your code may be replaced by compiler
+intrinsic versions unless you explicitly state that you don't want the compiler to do so.
+
+\begin{itemize}
+
+\item{%
+    \textbf{\_\_DATE\_\_}: Expands to the current date in the format MM DD YYYY.
+}
+
+\item{%
+    \textbf{\_\_TIME\_\_}: Expands to the current time in the format HH:MM:SS.
+}
+
+\item{%
+    \textbf{\_\_FILE\_\_}: Expands to the name of the file that encloses it.
+}
+
+\item{%
+    \textbf{\_\_LINE\_\_}: Expands to the line number that the macro was declared on.
+}
+
+\item{%
+    \textbf{\_\_STDC\_\_}: Defined as 1 when the compiler complies with the ANSI standard (C89/C90). Note that
+    the -ansi compiler flag fufills a similar role by enforcing the ANSI standard during compilation.
+}
+
+\item{%
+    \textbf{\_\_STDC\_VERSION\_\_}: Prints a timestamp in the format YYYY MM that describes the C standard that
+    the compiler is using.
+}
+
+\item{%
+    \textbf{\_\_STDC\_HOSTED\_\_}: Defined as 1 when the compiler's target is a hosted environment. A hosted
+    environment is an environment which implements the full libc standard.
+}
+
+\item{%
+    \textbf{\_\_cplusplus}: Similar to \_\_STDC\_VERSION\_\_, \_\_cplusplus also expands to a version string
+    in the same format. It is used to test if a header was compiled by a C compiler or a C++ compiler.
+}
+
+\item{%
+    \textbf{\_\_OBJC\_\_}: Defined as 1 when the Objective-C compiler is in use (Objective-C was, once upon a
+    time, used by Apple).
+}
+
+\item{%
+    \textbf{\_\_ASSEMBLER\_\_}: Defined as 1 when preprocessing assembly language.
+}
+
+\item{%
+    \textbf{\_\_VA\_ARGS\_\_ }: List of variadic arguments (will cover in more depth in a later section).
+}
+
+\end{itemize}
+
+I want to make mention of a few other non-official pre-defined macros, which I have found good use for, but
+which are more dependent upon what compiler you're using than the ones mentioned previously. I am referring
+primarily to \_\_FUNCTION\_\_, \_\_PRETTY\_FUNCTION\_\_, and \_\_func\_\_. These all print out the enclosing
+function's name, with the exception being \_\_PRETTY\_FUNCTION\_\_, which prints out additional information
+about the enclosing function alongside just its name. There is no real difference between \_\_FUNCTION\_\_ and
+\_\_func\_\_ other than the fact that the latter was released later to resolve version compatibility issues,
+making it the more portable option, and effectively making \_\_FUNCTION\_\_ obsolete.
+
+As we just seen, a lot of the pre-defined macros begin with two underscores. The common convension is that a
+single underscore is reserved for low level system variables and two underscores are reserved for compiler
+intrinsics/built-ins.
+
+\section{Pre-Processor Macro Functions}
+
+The \#define directive allows for passing in arguments to the macro label. The compiler does not perform type
+checking until compile time, since the preprocessor just inserts whatever you pass to the macro as arguments
+in the proper positions. Since macros are substituted prior to compilation, it is very common to see
+operations occur out of order. For example, take the following macro:
+
+\begin{clst}
+#define SECOND_TO_MILLIS(s) s * 1000
+    timer_func(SECOND_TO_MILLIS(5 + 5)); // Trying to pass in 10,000 to timer_func()
+\end{clst}
+
+While it seems like this should work (converting 10 seconds to 10,000 milliseconds), we actually end up with
+5005ms. This is because the macro is expanded before being compiled. The parameter 's' gets substituted as
+5 + 5, thus SECOND\_TO\_MILLIS is evaluated as 5 + 5 * 1000. Order of operations states that the
+multiplication should occur prior to the addition, so this evaluates to 5005.
+
+The common solution to this issue it to surround everything in brackets when you pass in parameters to a
+macro. The \#define for SECOND\_TO\_MILLIS should be re-written as follows:
+
+\begin{clst}
+#define SECOND_TO_MILLIS(s) ((s) * 1000)
+\end{clst}
+
+This would expand 's' as (5 + 5) so that the addition would occur before the multiplication (since brackets
+take precedence in order of operations).
+
+\section{Common Macro Idioms}
+
+Programmers really enjoy finding general-purpose recurring patterns that can be reused. You'll hear developers
+discuss the most "idiomatic" method of going about solving a problem. Typically, this refers to employing a
+pattern which is built-in to the language, or exists as a higher level concept. Macros have a couple of commonly
+used idioms that are useful for solving recurring issues. The following couple of sub-sections will cover a
+handful of the idioms that I'm most familiar with (pertaining specifically to macros).
+
+\subsection{Include Guard Idiom}
+
+Anytime that we use the \#include directive, the directive will copy and paste the contents of the provided
+header file into our source file (a.k.a. the .c file). If we have multiple .c files, it is probable that
+multiple of them will include the same header files. This causes compiler issues since the compiler will think
+that you've redefined the same symbols twice, when you did not intend to. In order to make sure that a header
+file only gets included once within the entire project, we often use the include guard idiom. The include
+guard is added within the header file and prevents the header from being included more than once. Here is what
+the include guard looks like:
+
+\begin{clst}
+#ifndef FOO_H
+#define FOO_H
+
+// All of your variable/function declarations and whatnot
+...
+
+#endif // FOO_H
+\end{clst}
+
+What's happening here is that the \#ifndef checks to see if FOO\_H is a macro that has previously been defined.
+If it has been defined, then \#ifndef returns false, and the entire include guard is skipped, otherwise, we
+\#define FOO\_H (we don't need to give it any value, it just needs to exist), then we insert all the code
+and/or definitions that would normally be added to our header file. Keep in mind that the entire header gets
+pasted where we \#include the header file, which would include our include guard. The next time that a .c file
+tries to \#include foo.h, the \#ifndef returns false since we \#define(d) FOO\_H previously, and therefore, we
+skip to the \#endif statement at the bottom of the file, and foo.h does not get included a second time.
+
+\subsection{Disabling a Region of Code}
+
+Rather than commenting out a region of code using a multi-line comment, we can easily disable a region of code
+by using the \#if and \#endif macros. It's as simple as doing the following:
+
+\begin{clst}
+#if 0
+// Code to disable
+#endif
+\end{clst}
+
+This simple trick can comment out code the same as a regular multi-line comment. The \#if 0 always evaluates
+to false, since 0 is evaluated as false in boolean expressions in C. You may want to do this to enable or
+disable a region of code. Whilst you could just use a multi-line comment, this is much quicker, and allows you
+to disable code which has comments in it (since commenting comments can sometimes be problematic).
+
+\subsection{Quick Debugging}
+
+It is not uncommon to inexperienced programmers outputting a million print statements that say something along
+the lines of "made it to line 5" or something to that effect. If you're truly too lazy to use an actual
+debugger, then there is a slightly better way to do this (although you should probably just learn how to use a
+proper debugger). We haven't covered printf() yet, but it is C's function for printing text to stdout.
+
+\begin{clst}
+#define DEBUG_LOG printf("file: %s, function: %s, line: %d\n", \
+	 	 __FILE__, __func__, __LINE__)
+
+void foo() {
+    // Some code
+    ...
+    DEBUG_LOG;
+}
+\end{clst}
+
+Simply by adding the macro DEBUG\_LOG, we print out the function name and line number that we reached. Note
+that we have a semi-colon after DEBUG\_LOG. This is because out printf statement must end in a semi-colon.
+Since it's bad practice to put semi-colons in macros, we place it after the macro instead.
+
+\subsection{The do-while(0) Idiom}
+
+The do-while(0) idiom is sort of a confusing one because we must first understand the problem that it solves.
+Let's say that we want to have a macro that runs 2 or more functions in a row. You might consider writing
+something like the following:
+
+\begin{clst}
+#define RUN_FUNCS(x) do_this((x)); \
+		                 do_that((x))
+
+if (condition)
+    RUN_FUNCS(5);
+\end{clst}
+
+The if condition would expand to:
+
+\begin{clst}
+if (condition)
+	do_this(5);
+	do_that(5);
+\end{clst}
+
+Assuming that you were trying to fit both functions into the if statement, this will not result in the desired
+behaviour. If no scope is provided with the curly braces in an if statement, only the line that comes directly
+after the if will be evaluated. In this case, do\_this(5) would be evaluated if the if condition was true, and
+then, since do\_that(5) is not considered to be inside the if statement, it will get ran in all cases. If the
+if condition is false, do\_this(5) fails to run, but do\_that(5) still runs.
+
+In order to have both function calls be within the if statement block, we can use the do-while(0) idiom. This
+looks like the following:
+
+\begin{clst}
+#define RUN_FUNCS(x) do { \
+			     do_this((x)); \
+			     do_that((x)); \
+			     } while (0)
+\end{clst}
+
+Remember that 0 evaluates to false in boolean expression in C, so this do-while loop will only run once since
+while (0) will return false and exit the loop. However, because do\_this() and do\_that() are both enclosed
+within the do-while loop, the if statement will now include both functions.
+
+\begin{clst}
+if (condition)
+	RUN_FUNCS(5);
+\end{clst}
+
+Now the above expands to:
+
+\begin{clst}
+if (condition)
+	do {
+		do_this(5);
+		to_that(5);
+	} while (0);
+\end{clst}
+
+Which for all intents and purposes is identical to:
+
+\begin{clst}
+if (condition) {
+	do_this(5);
+	do_that(5);
+}
+\end{clst}
+
+Effectively, what we've established is that the do-while sheathes the code which is expanded within the macro
+with an enclosing scope.
 
 \end{document}

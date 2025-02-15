@@ -1,0 +1,620 @@
+\documentclass{article}
+
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage[skip=11pt]{parskip}
+\usepackage[outputdir=/home/neil/.local/share/latex/output]{minted}
+
+\definecolor{bg}{RGB}{22,43,58}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue
+}
+
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+
+% C codeblocks
+\newtcblisting{clst}{%
+   listing only,
+   minted language=c,
+   minted style=monokai,
+   colback=bg,
+   enhanced,
+   frame hidden,
+   minted options={%
+      tabsize=4,
+      breaklines,
+      autogobble
+   }
+}
+
+\hypersetup{%
+   colorlinks=true,
+   linktoc=all,
+   linkcolor=gray,
+}
+
+\setmainfont{LiberationSans}
+\geometry{%
+  margin=1in
+}
+
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[R]{\thepage}
+\pagestyle{fancy}
+\fancypagestyle{plain}{\pagestyle{fancy}}
+
+\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+\renewcommand\maketitlehookd{\vfill\null}
+
+\title{POSIX Programming}
+\author{Neil Kingdom}
+
+\begin{document}
+
+\begin{titlingpage}
+
+\maketitle
+
+\end{titlingpage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Abstract}
+
+This document is intended to be a companion/extension of my C programming notes. It assumes the reader has an
+intermediate level of understanding regarding the C programming language. This document explores the POSIX API
+in detail. It explains some of the core principles of Unix-based systems to aid systems developers. I strongly
+encourage you, the reader, to skim the POSIX reference \href{https://pubs.opengroup.org/onlinepubs/9699919799/nframe.html}{guide}
+which is maintained by The Open Group. Have a look through the alphabetical listings for all of the function
+definitions and become acquainted with the plethora of utilties which are available to you.
+
+\section{Introduction}
+
+POSIX, if you are not familiar, is a standard which most of the major Unix/BSD/Linux systems ascribe to. It
+enforces standards with the aim of maximizing code portability across systems. If you use Linux or any other
+Unix-like OS, you may have been under the impression that POSIX was a standard for shell scripts. While this
+is technically true, POSIX is much broader in scope than simply being a standard for shell scripts. The intent
+of my C programming notes was to familiarize new C programmers with the syntax and functions belonging to the
+standard C library. Although this document will have some overlap with my C programming notes, for the most
+part it focuses more on APIs defined in the POSIX standard such as system calls (a.k.a. syscalls) or other
+OS-related utilities. Unfortunately, if you wish to become a systems developer for Windows, this guide simply
+is not for you.
+
+\subsection{A Brief History of Unix and Linux}
+
+In the 1960's the personal computer (PC) as we know it today did not exist. Organizations such as IBM utilized
+mainframes. These were monolithic pieces of machinery which used to be programmed by manually punching holes
+in cards aptly called punch cards.
+
+Operating systems did not really exist at the time. Instead, each machine would need to have its own "kernel"
+code (though the concept of a kernel did not really exist at the time either) written to accommodate the
+hardware which was unique to that system (e.g., the GE 645 Mainframe). As the complexity of these mainframes
+grew, so did the assembly code that had to be written for them. These machines could only run one program at a
+time. You would load the program into memory using a large stack of punch cards. The computer would crunch the
+numbers and spit our the results to a tape or printer. Eventually, as technology advanced, multiple users
+could connect to a single computer using tele-typewriters, which were essentially keyboards that could
+transmit the alpha-numeric character data that was entered over long distances. We began to be able to run
+more than one program at a time, and we developed assembly language which replaced the need for punch cards.
+
+Originally, Unix was written in assembly, but after Ken Thompson and Dennis Richie had developed the C
+programming language, they did a rewrite of Unix in 1973. People began to develop standards for writing
+firmware. Some examples include VAX VMS, CP/M, TRON, ITRON, MuITRON, etc. Eventually, the POSIX standard was
+born and would ultimately overrule its competitors.
+
+\subsection{POSIX}
+
+POSIX stands for Portable Operating System Interface (eXtended). This standard began in 1985 and was
+officially adopted by the IEEE committee as IEEE 1003.1-1988 and ISO/IEC 9945. The 'X' in POSIX, which stands
+for eXtended was introduced in POSIX.1-2001, as that version, alongside POSIX.1-2008 introduced new features
+which were not present in previous versions. "But what does it mean to be 'compliant' with the POSIX standard?",
+you may be asking yourself. In a nutshell, POSIX provides a list of APIs that the end user is tasked with
+implementing. POSIX defines the expected inputs, outputs and general behaviour of said APIs, however, the
+actual implementation may differ across systems. POSIX does not enforce things like expected level of
+performance, for instance.
+
+The POSIX standard is divided into sections based on the various components it affects. Here is a list:
+
+\begin{itemize}
+
+\item{%
+    \textbf{POSIX.1 - Base Definitions}: Provides definitions for fundamental concepts such as constants, types,
+    macros, etc.
+}
+
+\item{%
+    \textbf{POSIX.1b - Real-Time Extensions}: Constitutes real-time computing features such as thread
+    scheduling, pre-empting, priorities, message queues, etc.
+}
+
+\item{%
+    \textbf{POSIX.1c - Thread Extensions (Pthreads)}: Establishes the baseline for POSIX threads (a.k.a.
+    pthreads), thread attributes, and synchronization primitives such as mutexes and conditional variables.
+}
+
+\item{%
+    \textbf{POSIX.1d - Additional File System Interfaces}: Defines the APIs used to interface with the file
+    system. This includes sycalls such as open(), close(), mkdir(), link(), etc.
+}
+
+\item{%
+    \textbf{POSIX.1e - Security Extensions}: Includes definitions for security-related functionality such as
+    access-control lists (ACLs), authentication, authorization, etc.
+}
+
+\item{%
+    \textbf{POSIX.1f - Additional Extensions}: This section contains extensions to the base POSIX standard
+    that may optionally be implemented, meaning that not all systems contain these features, but those that do
+    may choose to follow the POSIX standard for said features. These include things such as file system
+    extensions, system performance monitoring, etc.
+}
+
+\item{%
+    \textbf{POSIX.1g - Networking Interfaces}: Provides definitions for APIs pertaining to networking-related
+    tasks. These include APIs such as socket(), bind(), connect(), select(), etc.
+}
+
+\item{%
+    \textbf{POSIX.1-2017 - System Interfaces}: Defines most of the APIs we'll be discussing in this document.
+    Provides the standard definitions for signals, file I/O, user/group management, syscalls, etc.
+}
+
+\item{%
+    \textbf{POSIX.2 - Shell and Utilities}: Specifies the expected behaviour for CLI tools and shell scripts.
+}
+
+\item{%
+    \textbf{POSIX.2a - Internationalization}: Provides APIs for setting the locale, system language and
+    character set, time zone, etc.
+}
+
+\end{itemize}
+
+\section{Resources and Handles}
+
+Before we begin, I'd like to take a moment to define what is meant when we use the terms 'resource' and
+'handle'. These are important terms that I'll use throughout the docment, and it will be beneficial to your
+understanding if I define these terms beforehand.
+
+A \textit{system resource} is defined to be a virtual component with limited availability. System resources
+might include command line parameters, environment variables, timers, file descriptors, signal handlers, and
+the program stack. Typically, a process is granted one or more resources by the kernel and then forfeits said
+resources when it dies.
+
+A \textit{handle} typically refers to either a pointer or ID which is associated with a system resource. For
+instance, if I mention that a function takes in a file handle as a parameter, this most likely just means that
+the function accepts some reference, pointer, or numeric ID which is associated with an open file.
+
+\section{Processes}
+
+I'm embarrassed to admit the amount of time it took for me to actually understand the concept of a process.
+Obviously, I’m sure we’ve all heard the word 'process', but do we actually understand what that is? Put simply,
+a process is an instance of a running program. In other words, it is a program in execution. In Linux, each
+process is ascribed a unique process ID, or PID for short. All processes must utilize at least one thread to
+execute, but if a process uses more than one thread it is considered to be a multi-threaded process. The term
+'thread' is short-hand for "thread of execution". It is almost certain at the time of writing this document
+that you have a processor which contains multiple cores. What this means is that the CPU contains multiple
+physical dies (or copies of the CPU circuit), which are also known as cores. If a CPU has 4 cores, then
+that would effectively be the equivallent of running 4 separate CPUs. Each of these cores can be considered
+as a single thread of execution, and these threads are capable of executing in parallel i.e. at the same time.
+The exceptions to this rule are Intel’s hyperthreading and AMD’s Simultaneous Multi-Threading (SMT) which
+let each core create a virtual core known as a logical core, which effectively doubles the number of cores of
+the system. Similar to processes, each thread also has its own thread ID, or TID for short. TIDs are unique
+to their parent process, but not necessarily unique across the system (unlike PIDs). Processes can contain
+system resources which are shared amongst the process' threads.
+
+\subsection{The Boot Sequence}
+
+Although it may seem irrelevant, I think it will be beneficial to understand the general steps involved in
+the boot sequence for a Unix-like system. A power on sequence is initiated when the power button is pressed.
+This will initiate either the BIOS/UEFI chip or Initial Program Loader (IPL) depending on the system. These
+may perform some tasks such as the Power On Self Test (POST) to check the hardware before jumping to a
+hard-coded address on the disk to begin executing some code. Typically, the code which lives at this hard-coded
+address will be your boot loader. On Linux, the most popular boot loader is GRUB (specifically GRUB 2). GRUB
+then begins what's known as the init system. The init system is the first process that runs on your system and
+it has a PID of 0. The init system will fork itself into many children processes and begin several other
+programs which are important for initializing the OS.
+
+\subsection{Forking a Running Process (fork)}
+
+\begin{clst}
+
+pid_t fork(void);
+
+\end{clst}
+
+Aside from the init system which we looked at, all other processes on Unix-based systems are forked from a
+parent process. This creates a sort of heirarchical process tree. The fork() system call creates a clone of
+the parent process. This newly created process is known as the child process, and the calling process is known
+as the parent process. The child process will be allocated stack space that is separate from the parent's
+stack space, but the contents of the parent's stack will be copied to the child's stack. This does not mean
+that they are exactly the same in every regard (see man pages). For instance, the child will receive a unique
+PID, and regardless of whether or not the parent was multithreaded, the child process will start with a single
+thread of execution. This is because it is too difficult to copy over the state of threads to a child process.
+For this reason, calling fork() on multithreaded applications is discouraged. Let's analyse a bit of sample
+code which utilizes the fork() syscall:
+
+\begin{clst}
+
+#include <stdio.h>
+#include <unistd.h>
+#include <assert.h>
+
+int main(void) {
+    const pid_t pid = fork();
+    assert(pid != -1);
+
+    if (0 == pid) {
+        printf("Child PID: %d\n", getpid());
+    } else {
+        printf("Parent PID: %d\n", getpid());
+    }
+}
+
+// Output (PIDs will differ on your system):
+// Parent PID 15323
+// Child PID 15324
+
+\end{clst}
+
+As soon as fork() is invoked, the process' stack along with all of its resources (file descriptors, priority,
+signal mask, I/O privillege, etc.) are copied into a new stack space which is allocated for the child process.
+The program's stack pointer will not change, so we resume execution in both processes immediately. In the
+parent process, fork() returns the PID of the new child process, whereas in the child process, fork() returns
+0. If fork() were to fail for whatever reason (e.g., not enough stack space), then it would return -1 and the
+parent process would simply terminate. Assuming that fork() succeeded, the parent process will output its PID
+and the child will output its PID (both retreived from a call to getpid()). If you run the program above
+multiple times, you will note that sometimes the parent exits first, and sometimes the child exits first. The
+order in which the print statements are executed within the example above is essentially arbitrary and comes
+down to a race condition. For other programs that invoke fork(), other factors may determine the lifetime
+of both the parent and child processes such as regions where the code may block awaiting a resource or user
+input, or the fact that child processes do not initially inherit additional threads which are owned by the
+parent.
+
+\subsection{The Exec Family of Functions}
+
+The exec family of functions work in tandem with fork(). Here is the list of exec functions before I proceed
+with their explanations:
+
+\begin{itemize}
+
+\item{int execl(const char *path, const char *arg0, ..., (char *)0);}
+
+\item{int execle(const char *path, const char *arg0, ..., (char *)0, char *const envp[]);}
+
+\item{int execlp(const char *file, const char *arg0, ..., (char *)0);}
+
+\item{int execv(const char *path, char *const argv[]);}
+
+\item{int execve(const char *path, char *const argv[], char *const envp[]);}
+
+\item{int execvp(const char *file, char *const argv[]);}
+
+\item{int fexecve(int fd, char *const argv[], char *const envp[]);}
+
+\end{itemize}
+
+It may be overwhelming to see this many versions of a function, but I assure you, their differences are not
+too hard to commit to memory. Before delving into the differences of each, allow me to explain the general
+idea behind exec(). A useful resource in systems programming is the ability to be able to run programs from
+within an already running program. fork() provides us with the ability to copy a running process, which in
+turn allocates a brand new stack for us to use, copies the parent's stack, and resumes execution wherever the
+stack pointer left off. However, what if we could use the stack space that was allocated for this new child
+process to run a different program entirely? This is essentially what exec does. Think of it almost like
+memcpy() where we copy data into an existing buffer, overwriting the previous contents, but this time we're
+doing it with processes.
+
+Let's look at the subtle differences of each version of exec.
+
+First is execl(). This function takes a path to the binary of the application that we want to copy into our
+stack created with fork() as its first argument. The second argument is the mandatory 0th argument for the
+program, followed by a vararg list of additional options to give the program. The list of varargs must be NULL
+terminated i.e., the last argument must be NULL. Note that in Linux, the 0th argument is always the name of
+the program.
+
+Next I'll cover execlp(). This function is identical to execl(), with the only difference being that it will
+search the user's \$PATH environment variable for the binary. This means that you no longer have to provide
+the absolute path to the location of the program, assuming that it exists somewhere in the user's \$PATH.
+
+Next is execv(). This version is again, identical to execl(), with the main difference being that instead of a
+list of comma separated varargs, we provide an array of arguments instead. Note that the array of arguments
+must still be NULL terminated.
+
+execvp(), as you can probably guess, combines the utility of execlp() and execv() into one. execle() is again,
+identical to execl(), with the difference being that there is now an additional mandatory argument which comes
+after the NULL terminator for the program arguments vararg list. This mandatory argument (env) is a another
+array, similar to execv(), but for exporting environment variables at runtime. The syntax for this is how you
+would expect when using the export command on Linux. For example:
+
+\begin{clst}
+
+char *const env[] = { "HOSTNAME=www.example.com", "PORT=8080", NULL };
+
+\end{clst}
+
+This will export the environment variables HOSTNAME and PORT with their respective assigned values.
+
+execve() combines the functionality of execv() and of execle().
+
+Finally is fexecve(). This is identical to execve(), but rather than executing a binary ELF file, it executes
+whichever file is associated with the file descriptor supplied in the fd argument. The two caveats with this
+are that 1. the file descriptor must be opened as O\_RDONLY or O\_PATH, and 2. the caller must have permission
+to execute the file referenced by fd.
+
+Note that child processes which do not call one of the exec functions, or that call exec but it fails, should
+invoke \_exit() rather than exit(). This is so that the child process does not interfere with the parent
+process' external data (files) by calling its atexit handlers, signal handlers, and/or flushing buffers.
+
+\subsection{Virtual Fork (vfork)}
+
+\begin{clst}
+
+pid_t vfork(void);
+
+\end{clst}
+
+vfork() is an outdated function that probably should not be used anymore, but I figured we might as well
+cover it. The idea behind vfork() was to optimize the rare case where you would want to call fork()
+immediately followed by execve(). The idea is that execve() must copy over the entire process to the newly
+reserved process space which can be a heavy operation. vfork() attempted to solve this by blocking the parent
+process' calling thread and borrowing its stack space for the child process rather than allocating a new stack
+and copying it from the parent. This blocking of the parent process' calling thread occurs until the child
+either calls execve(), \_exit(), or terminates abnormally (e.g. via a signal). Nowadays, fork() has had many
+improvements, the most notable being it's ability to do copy-on-write (COW). The way that COW works, is that
+when a program requests to do a write operation, small pages of data are copied from the process to the
+process' address space right before the write occurs, rather than copying over the entire process all at once.
+In other words, we only copy over what's necessary when it's necessary to do so. Long story short, vfork() is
+essentially deprecated and you should instead just use fork() followed by one of the exec functions.
+
+\subsection{posix\_spawn}
+
+\begin{clst}
+
+int posix_spawn(
+    pid_t * restrict pid,
+    const char * restrict path,
+    const posix_spawn_file_actions_t *file_actions,
+    const posix_spawnattr_t * restrict attrp,
+    char * const argv[restrict],
+    char * const envp[restrict]
+);
+
+\end{clst}
+
+One function that still is used as an alternative to exec() is posix\_spawn(). The main difference between the
+exec() functions and posix\_spawn() is that we can specify file descriptors that we want the child process to
+inherit from the parent.
+
+\subsection{Zombie Processes and How to Avoid Them (wait and waitpid)}
+
+\begin{clst}
+
+pid_t wait(int *stat_loc);
+pid_t waitpid(pid_t pid, int *stat_loc, int options);
+
+\end{clst}
+
+When a child process is created via fork(), it will innevitably die (exit) at some point. When a child process
+dies, it sends out a SIGCHLD signal to the parent process. The parent process is able to invoke wait() or
+waitpid() to determine the reason for why the child process died. In the case that the parent does not invoke
+wait() or waitpid(), the child frees most of its resources, but its PID remains in the process table in order
+to hold its exit status. This is known as a zombie process. Zombie processes use no CPU or resources, as they
+are not running. wait() causes the calling thread to become blocked until either any child returns its exit
+status, or another signal is sent telling the parent process to terminate the child. If the stat\_loc argument
+is not NULL, information about the child's exit status will be stored at the location pointed to by stat\_loc.
+stat\_loc will contain 0 if and only if one of the following conditions is true:
+
+\begin{enumerate}
+
+\item{The child process returned 0 from main()}
+
+\item{The child process called \_exit() or exit() with a status of 0}
+
+\item{The process was terminated because the last thread in the process was terminated}
+
+\end{enumerate}
+
+If the stat\_loc argument is NULL, the return status info is discarded and all zombie processes which are
+descendants of the parent are cleared. waitpid() waits for any child process to return its exit status if the
+argument for pid is equal to -1. In this regard, it is the same as a call to wait(). If the argument for pid
+is greater than 0, it specifies the PID of a single child process for which status is requested. The stat\_loc
+argument functions in the same manner as it does in wait(). The options argument can be 0 if no flags are
+desired, or 1 or more of the following flags, joined through the bitwise OR operator:
+
+\begin{itemize}
+
+\item{%
+    \textbf{WCONTINUED}: Report the status of any continued child specified by pid whose status has not been
+    reported since it continued from a job control stop.
+}
+
+\item{%
+    \textbf{WNOHANG}: waitpid() shall not suspend execution of the calling thread if status is not immediately
+    available for one of the child processes specified by pid.
+}
+
+\item{%
+    \textbf{WUNTRUNCATED}: The status of any child process specified by pid that are stopped, and whose status
+    has not yet been reported since they stopped, shall also be reported to the requesting process.
+}
+
+\end{itemize}
+
+Note that zombie processes can be avoided entirely by adding the SIGCHLD signal to the ignore list via the
+signal() API:
+
+\begin{clst}
+
+signal(SIGCHLD, SIG_IGN);
+
+\end{clst}
+
+This tells the process to ignore the SIGCHLD signal completely, and thus, the child will just die instead of
+becoming a zombie.
+
+Let's take a look some sample code to get a better idea of the usage for wait()/waitpid():
+
+\begin{clst}
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <assert.h>
+#include <sys/wait.h>
+
+void child_died(int status) {
+    printf("Child died with status: %d\n", status);
+}
+
+int main(void) {
+    pid_t pid = fork();
+    assert(pid != -1);
+
+    if (pid == 0) {
+        execlp("/usr/bin/sleep", "sleep", "10", NULL);
+    } else {
+        signal(SIGCHLD, child_died);
+        waitpid(pid, NULL, 0);
+    }
+
+    return 0;
+}
+
+\end{clst}
+
+In this example, we fork the parent process and create a new child process. Remember that fork() returns 0 for
+the child process, so it invokes execlp() and replaces itself with the binary ELF for the sleep utility. The
+second argument (10) is the amount of seconds to sleep for. Meanwhile, in the parent process we set up a
+signal handler using signal() to run a print statement and notify us when the child dies. Immediately
+afterwards, we call waitpid() which blocks the parent process until the child process dies (which happens
+after 10 seconds). Once 10 seconds has expired, the child process calls exit() and the parent process can
+continue execution (in this case there is nothing left to execute, so it terminates).
+
+\subsection{Process Resources}
+
+When a process is terminated for any reason then the process is destroyed and all OS resources that were being
+used by the process are returned to the kernel. The stack is deallocated, file descriptors are closed, timers,
+mutexes, semaphores, etc. are destroyed. Take the following code for example:
+
+\begin{clst}
+
+#include <stdlib.h>
+
+/*
+    On a computer with 16G of memory, and exactly 15G of memory
+    free, how many times will this successfully run?
+*/
+
+#define ONE_GIG ((size_t)(1024 * 1024 * 1024))
+
+int main(void) {
+    void const * const p = malloc(ONE_GIG);
+    return (p == NULL) ? EXIT_FAILURE : EXIT_SUCCESS;
+}
+
+\end{clst}
+
+The answer to this question is that the program will run an infinite amount of times. Despite the program
+(pressumably) allocating one gigabyte of memory using malloc each time that it is executed, once the process
+is destroyed, that memory is returned to the OS for re-use, thus we never run out of memory. Additionally,
+malloc() uses COW mappings, so even if this code was in an infinite while() loop, it would still run forever,
+since we never actually write to the address contained in p.
+
+\section{File I/O}
+
+\subsection{I/O Control (ioctl)}
+
+\subsection{File Control (fcntl)}
+
+\subsection{Duplicating File Descriptors (dup and dup2)}
+
+\subsection{Querying File Information (stat and fstat)}
+
+\section{Delegating Commands (system)}
+
+\section{POSIX Signals}
+
+\subsection{Filtering Signals With sigset\_t}
+
+\section{POSIX Events}
+
+\subsection{The sigevent Struct}
+
+\section{Sleeping}
+
+\subsection{sleep}
+
+\subsection{nanosleep}
+
+\subsection{usleep}
+
+\section{Getting the System Clock Date-Time (strftime)}
+
+\section{Timers}
+
+\subsection{Creating a New Timer (timer\_create)}
+
+\subsection{Starting or Resetting a Timer (timer\_settime)}
+
+\section{Setting the Locale}
+
+\section{Inter-Process Communication (IPC)}
+
+\subsection{Anonymous Pipes}
+
+\subsection{Named Pipes or FIFOs}
+
+\subsection{Berkley Sockets}
+
+\section{Concurrency Via POSIX Threads}
+
+\subsection{Scheduling Threads}
+
+\subsection{Thread Pre-Empting}
+
+\subsection{Creating Threads (pthread\_create)}
+
+\subsection{Thread Attributes}
+
+\subsection{The Thread Lifecycle}
+
+\section{Synchronization Primitives}
+
+\subsection{Mutexes}
+
+\subsection{Mutex Attributes}
+
+\subsection{Deadlock}
+
+\subsection{Semaphores}
+
+\subsection{Conditional Variables (condvars)}
+
+\subsection{Reader-Writer Locks}
+
+\subsection{Spin Locks}
+
+\subsection{Atomic Operations}
+
+\subsection{Others}
+
+\section{Loading DLLs at Runtime}
+
+\subsection{Hot-Reloading Implementation Example}
+
+\end{document}

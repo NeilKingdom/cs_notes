@@ -105,11 +105,11 @@ job to then take the byte code and give it to the Java Runtime Environment (JRE)
 If this is confusing, don’t worry too much – all you need to know is that we need the JVM to run Java
 applications and that it makes them compatible with all architectures/platforms.
 
-\section{The Java Development Kit}
+\section{The Java Development Kit (JDK)}
 
 Typically, managed languages will come with some sort of development kit, which is kind of like a suite of
 applications bundled into one installer. Usually this is called a Software Development Kit (SDK), but Java calls
-theirs the Java Virtual Machine (JDK). Non developers actually don’t need the entire JDK – they only need the
+theirs the Java Virtual Machine (JDK). Non-developers actually don’t need the entire JDK – they only need the
 JRE to be able to run Java applications. The JDK includes the JRE, but also adds the JVM, core class libraries,
 the Java compiler (javac), the Java debugger (jdb), and documentation. The history of the JDK can be a bit
 confusing because of Sun’s acquisition by Oracle. The JDK used to be called J2SE. J2SE still exists nowadays,
@@ -142,12 +142,17 @@ Recall that I stated the JDK provided the developer with core libraries. This se
 the Java Class Libraries (JCL). A library is just a set of prewritten code that we can use within our
 programs. We can install and use additional libraries beyond what’s in the JCL, but the JCL provides
 developers with most of the basic/core functionality that is expected. When we import a library, we do so with
-a statement like the following: import java.util.Random;. In java, paths to files are represented using dots
-rather than slashes, but you can think of this as importing a file called Random from the relative path
-./java/util/Random, where the Random file contains all of the library code for performing operations with
-random numbers. Point being that you can tell this is a part of the JCL due to the fact that the initial
-directory is the java directory. Extention libraries which are not directly part of the JCL are usually
-located in the javax directory, which stands for Java extentions.
+a statement like the following:
+
+\begin{jlst}
+import java.util.Random;
+\end{jlst}
+
+In java, paths to files are represented using dots rather than slashes, but you can think of this as importing
+a file called Random from the relative path ./java/util/Random, where the Random file contains all of the
+library code for performing operations with random numbers. Point being that you can tell this is a part of
+the JCL due to the fact that the initial directory is the java directory. Extention libraries which are not
+directly part of the JCL are usually located in the javax directory, which stands for Java extentions.
 
 \section{Variables}
 
@@ -308,7 +313,12 @@ function named main(). In some other programming languages, the declaration of m
 it must follow the syntax we’ve used in the example i.e. public static void main(String[] args). args is a
 variable, which is the only thing that we’re allowed to name differently, though it’s good to keep the
 convension of calling it args. Within the entry point of our program, we use the statement
-System.out.println("Hello, World!"); to print out the string "Hello, World!" to the console.
+
+\begin{jlst}
+System.out.println("Hello, World!");
+\end{jlst}
+
+to print out the string "Hello, World!" to the console.
 
 Writing the program is one thing, but running it is another. The way you execute this code will be dependent
 upon your setup. There are essentially two options that you have: either execute the code from a terminal, or
@@ -470,12 +480,48 @@ String, we pass in the String "yip". The speak() method binds/assigns this value
 prints it to the console. The same procedure is repeated for the next instance of Dog, which is bernese, but
 this time we invoke the speak() method with the argument "woof".
 
-\section{Creating a Java Archive}
+\section{Type Casting}
 
-\section{Manifest Files}
+\section{Access Modifiers}
+
+\section{Constructors}
+
+\section{Inheritance and Polymorphism}
+
+\subsection{The Object Root Class}
+
+\subsection{Overriding and Overloading Methods}
+
+\subsection{The Super Keyword}
+
+\subsection{Abstract Classes and Interfaces}
+
+\section{Collections API}
+
+\section{Comparable Interface}
+
+\section{Serialization}
+
+\subsection{The Transient Keyword}
+
+\section{Plain Old Java Objects (POJOs)}
+
+\section{Threads and Synchronization}
+
+\subsection{Thread LifeCycle}
+
+\subsection{Monitors}
+
+\section{Building Java}
+
+\subsection{Creating a Java Archive (JAR)}
+
+\subsection{JAR vs WAR}
+
+\subsection{Manifest Files}
+
+\subsection{Ant, Gradle, and Maven}
 
 \section{Debugging with JDB}
-
-\section{Ant, Gradle, and Maven}
 
 \end{document}

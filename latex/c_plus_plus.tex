@@ -9,8 +9,8 @@
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{tabularx}
+\usepackage{minted}
 \usepackage[skip=11pt]{parskip}
-\usepackage[outputdir=/home/neil/.local/share/latex/output]{minted}
 
 \definecolor{bg}{RGB}{22,43,58}
 
@@ -99,13 +99,14 @@ language if needed. C++ is a very general purpose programming language that can 
 applications. Examples might be game engines, operating systems, web backends, etc. With an idea of what C++
 actually is, we can begin to look at some of the differences between it, and C.
 
-\section{The Myth of Backwards Compatability}
+\section{The Myth of Backwards Compatability With C}
 
-You will hear it said that C++ is backwards compatible with C. This is simply untrue. C is also not a subset
-of C++ - they are two distinct languages that have deviated more and more over time. I say this because, even
-though you can write programs that would run in both a C compiler and a C++ compiler, this does not mean that
-all C programs will compile under a C++ compiler. There are things in the C language that are not present in
-C++, especially once you begin to use more modern versions of C such as C11 and onwards.
+You will oft hear it stated that C is simply irrelevant due to the fact that C++ is backwards compatible with
+it! This is simply untrue, however. Furthermore, C cannot be called a "subset" of C++ either - they are two
+distinct languages that have, and continue to, deviate more and more over time. I bring this up because,
+although you can write programs that would run in both a C compiler and a C++ compiler, this is not indicative
+of backwards compatibility, as so many believe. There are instances where we may write identical lines of code
+in both C and C++ which operate in a completely different manner than one another.
 
 \section{Basic I/O}
 
@@ -166,10 +167,10 @@ operator overloading, which we will discuss later).
 \section{std::string, std::vector, and std::array}
 
 Though C++ supports C-style strings and C-style arrays, it is considered more idiomatic to use std::string,
-std::array, and std::vector when defining strings, arrays, and dynamic arrays respectively. There are benefits
+std::array, and std::vector when defining strings, arrays, and dynamic arrays, respectively. There are benefits
 to using these since C++ collections are polymorphic and share a lot of the same behaviours. Whichever you
 decide to use, just be consistent in your codebase, since swapping between C-style strings or arrays and C++
-strings or arrays gets really messy really fast.
+strings or arrays can get real messy real fast.
 
 If you're familiar with other OOP languages, the std::string, std::vector, and std::array classes should feel
 pretty familiar to you. std::string is actually a typedef for basic\_string<char>. Since basic\_string accepts
@@ -240,7 +241,7 @@ As I mentioned earlier, C++ header files can optionally omit the .h extension. T
 accept both the .h extension, as well as the .hpp extension. Source files do not abide by the same rules, as
 they must always have the .cpp extension.
 
-\section{C++ Function Nuances}
+\section{Function Nuances}
 
 C++ has a couple new features when it comes to functions which C did not have, so I'd like to highlight some
 of them in the following subsections.
@@ -299,7 +300,7 @@ for an Animal class:
 \begin{cpplst}
 class Animal
 {
-    public:
+public:
     // Constructor/destructor
     Animal(std::string name, bool has_fur, double speed);
     ~Animal();
@@ -310,10 +311,10 @@ class Animal
     double get_speed();
 
 private:
-	// Member variables
-	std::string m_name;
-	bool m_has_fur;
-	double m_speed;
+    // Member variables
+    std::string m_name;
+    bool m_has_fur;
+    double m_speed;
 };
 \end{cpplst}
 
@@ -330,9 +331,9 @@ animal.cpp, we would then define the actual code block/body for each of the decl
 
 Animal::Animal(std::string name, bool has_fur, double speed)
 {
-	m_name = name;
-	m_has_fur = has_fur;
-	m_speed = speed;
+    m_name = name;
+    m_has_fur = has_fur;
+    m_speed = speed;
 }
 
 Animal::~Animal()
@@ -340,17 +341,17 @@ Animal::~Animal()
 
 std::string Animal::get_name()
 {
-	return m_name;
+    return m_name;
 }
 
 void Animal::get_has_fur()
 {
-	return m_has_fur;
+    return m_has_fur;
 }
 
 double Animal::get_speed)
 {
-	return m_speed;
+    return m_speed;
 }
 \end{cpplst}
 
@@ -370,10 +371,10 @@ though the third has a bit of a catch. Let's look at an example of each:
 
 int main()
 {
-	Animal cat("cat", true, 1.2); // Method 1
-	Animal dog = Animal("dog", true, 2.3); // Method 2
-	Animal bird = new Animal("bird", false, 6.8); // Method 3
-	delete bird;
+    Animal cat("cat", true, 1.2); // Method 1
+    Animal dog = Animal("dog", true, 2.3); // Method 2
+    Animal bird = new Animal("bird", false, 6.8); // Method 3
+    delete bird;
 }
 \end{cpplst}
 
@@ -433,13 +434,13 @@ private:
     int i;
 public:
     void mutate_i() const {
-		this->i = 4; // Cannot assign to non-static data member within const member function 'mutate_i'
-	}
+        this->i = 4; // Cannot assign to non-static data member within const member function 'mutate_i'
+    }
 };
 
 int main() {
     Foo f;
-	f.mutate_i();
+    f.mutate_i();
 }
 \end{cpplst}
 
@@ -461,97 +462,114 @@ case, 5), which it knows is an int, and therefore, will make a of type int.
 
 \section{Pointers vs References}
 
-Raw pointers have been carried over from C with the same syntax that you're familiar with. This includes an
-asterisk after the datatype and setting the pointer to the address of another variable using the ampersand (\&).
-While we certainly can still use raw pointers in C++, the idiomatic equivallent is to use references. In
-essence, references accomplish the same goal as pointers, however, there are differences between the two. For
-references, we use the ampersand, similar to how we would use the asterisk when declaring a pointer e.g.
-datatype \&ref\_name; in order to differentiate the variable as a reference. Outside of variable declaration,
-the ampersand always refers to a variable's address. In order to set a reference to the address of another
-variable, we no longer require the address operation as you would with raw pointers. Instead, we just assign
-the reference to the value we want it to point to, and the address of the rvalue is retrieved implicitly. For
-example: int \&ptr = num; Since ptr is a reference type, the assignment operator implicitly assigns the address
-of num to ptr. Another difference between pointers and references is that pointers would need to be
-dereferenced to alter the value at the pointers address. Once again, dereferencing is done implicitly, so we
-can access member variables or functions with a reference variable the same way that you would access them
-normally. One distinct difference between pointers and references is that references cannot be of type void.
-This was an intentional decision made by Stroustroup to avoid dangerous type-punning operations. Take a look
-at this example code:
+If you've programmed in C, you are surely by now painly aware of how pointers work. For those younger folk who
+are blissfully unaware of pointer voodoo magic, I won't be catching you up to speed, but if I can attempt to
+summarize briefly, pointers are simply variables which store memory addresses to other variables, akin to a
+lookup table. C++ attempts to do away with pointers for a couple good reasons. Perhaps the most catastrophic
+aspect of pointers is the fact that we can have two pointers to the same memory location. This can lead to
+chaos if not properly managed, since we can have two writers attempting to write over each other, which leads
+to data clobbering and confusion. The root of this issue is why so many languages have transitioned towards
+the notion of object ownership and move semantics. For compatibilities sake, C++ still allows us to utilize
+pointers if necessary, but there is almost no need to use them unless you're extending pre-existing code
+written in C. If you'll recall, we differentiate between pointers and primitives by placing an asterisk between
+the variable's type and its name. We use the ampersand to retrieve the address of a variable. Furthermore, we
+can assign NULL to a pointer, which is typically a good idea if the pointer has not yet been initialized, so
+that we don't attempt to dereference some random address (since stack-allocated pointers will contain a
+garbage value by default).
 
 \begin{cpplst}
-#include <iostream>
-#include <vector>
-
-void addFive(int &x)
-{
-    x += 5;
-}
-
-int main()
-{
-    std::vector<int> vec { 10, 20, 30, 40 };
-    for (int i = 0; i < vec.size(); ++i)
+    int main()
     {
-        addFive(vec[i]);
-    }
+        int x = 10;
+        int *px = nullptr;
 
-    for (std::vector<int>::iterator i = vec.begin(); i < vec.end(); ++i)
-    {
-        std::cout << "Element " << i - vec.begin() << ": " << *i << std::endl;
+        px = &x;
+        std::cout << "Value of x is " << *px;
     }
-}
 \end{cpplst}
 
-Output: 15, 25, 35, 45
+So what are the benefits of using references over pointers? Well, to begin, references must be assigned a
+value when they are initialized/declared. Furthermore, references cannot be assigned a value of NULL or
+nullptr. Another related fact is that references cannot be reassigned to a different value after they are
+initialized. This is effectively equivallent to making a const pointer such that the underlying memory of the
+pointer cannot be mutated (though the value of the variable being pointed to may change). The pragmatic
+purpose for all of these differences is that we avoid trouble with references such as accidentally
+dereferencing a NULL pointer or having the underlying memory address of the reference be updated without our
+knowing.
 
-Aside from the iterator stuff at the end, which we'll cover later, this code is fairly self-explanatory. We loop
-through the vector that we create on the stack and implicitly pass the address of each element in said vector
-to our addFive function, which accepts a reference to the element and increments it. This change persists
-precisely because we are modifying the actual underlying data that we pass to the function, as opposed to a
-local copy of it on the stack.
-
-It is not uncommon within C++ programs to have to use a C library which uses raw pointers. Knowing how to
-convert between references and raw pointers is a skill which is acquired gradually. Below is some additional
-code examples to demonstrate the differences between references and raw pointers:
+References differ quite a bit from pointers semantically as well. In my opinion, the creators of C++ chose
+poorly when they decided to repurpose the ampersand to denote a variable as a reference. This is highly
+contextual since the ampersand can simultaneously represent an address depending on where it is used. Similar
+to pointers, placing the ampersand between the variable's type and its name indicates that the variable is a
+reference, but used anywhere else and ampersand almost always indicates an address. Fortunately, however,
+references no longer need to be explicitly dereferenced, nor do you need to explicitly use the address
+operator when initializing a reference like you would for pointers. Here is the same code snippet as before,
+but using a reference rather than a pointer:
 
 \begin{cpplst}
-inline void takeRawPtr(int *x) { *x += 5; }
-inline void takeRawDblPtr(int **x) { **x += 5; }
-inline int *retRawPtr(int *x) { *x += 5; return x; }
+    int main()
+    {
+        int x = 10;
+        int &rx = x;
 
-inline void takeRef(int &x) { x += 5; }
-inline void takeRef2RawPtr(int *&x) { x += 5; }
-inline int &retRef(int &x) { x += 5; return x; }
-
-int main()
-{
-    int x = 10;
-    int *px = &x;
-    int &rx = x;
-
-    takeRawPtr(px);
-    takeRawDblPtr(&px);
-    px = retRawPtr(px);
-
-    takeRef(*px);
-    takeRef2RawPtr(px);
-    rx = retRef(*px);
-
-    return EXIT_SUCCESS;
-}
+        std::cout << "Value of x is " << rx;
+    }
 \end{cpplst}
 
-It should be noted that references, unlike raw pointers, must be assigned when they are declared, and cannot
-be assigned as nullptr or NULL. Once again, this is a safety feature to avoid attempts at dereferencing null
-pointers, which is a common mistake made in C programs.
+As a reminder (and this applies to pointers as well), it is generally wise to make your parameters references
+if you're passing in a struct which is greater in size than your computer's word length. For example, on a
+64-bit machine, a pointer or reference will occupy 4 bytes, so if your struct is greater than 4 bytes in size
+(which is nearly always the case) then it will save compute cost to setup the stack frame with a reference to
+that data rather than passing a copy of the entire structure over the memory bus.
 
-You are surely aware by now that const prevents a value from being altered during runtime. In order to save a
-bit of computational cost, if we happen to have a parameter that we do not want to be altered during the
-execution of a function, we can replace it with a constant reference and this will save the computer having to
-make a local copy of the parameter in stack space. For example, instead of having a function
-func(int const dontAlterMe) {...} we could instead use a reference: func(int const \&dontAlterMe)
-and that would use the address of the argument rather than making dontAlterMe it's own local variable on the
-stack.
+On a final note, newcomers may become confused about converting between pointers and references. Once you
+have a firm grasp on the basics this isn't actually all that difficult to do, but I too struggled with this
+initially, so for those of you who are confused, you have my sympathy. Understanding that references implicitly
+prepend your variables with the address operator during assignment and implicitly dereference themselves when
+being read is the key to dealing with these sorts of issues. Here is  a quick snippet to help visualize this:
+
+\begin{cpplst}
+    int main()
+    {
+        int x = 10;
+        int *px = &x;
+        int &rx = *px; // Here we effectively are doing &(*px), which cancels out to rx = px
+        *px = rx; // Implicit dereference of rx to get the value 10
+    }
+\end{cpplst}
+
+\section{NULL vs nullptr}
+
+In the previous section, I utilized the nullptr keyword, which may or may not have been a surprise to you
+depending upon your background. Even though C++ allows us to utilize the NULL macro, in the same vain as
+references vs pointers, it is advised that you utilize the nullptr keyword over the NULL macro. The most
+compelling reason for this is that nullptr is directly embedded into the language, meaning that it is platform
+agnostic, whereas NULL actually gets included from the standard library as a macro and its definition may
+vary depending upon the platform. Considering NULL usually just resolves to the integer 0, this lets us do
+all sorts of odd things such as type conversions and casting, which is generally not the programmer's intent.
+nullptr can only be assigned to poiner types in C++, and it cannot be cast or disambiguated. Another common
+example that is used to disuade against the use of NULL is the ambiguous function call example. Considering
+C++ introduces function overloading, imagine a scenario where we have two functions - one which accepts an
+integer as its sole parameter, and another which accepts a char pointer. Now imagine we invoke this function
+and pass in a value of NULL. Which function ought the compiler invoke under this circumstance since both
+signatures can reasonably accept the argument?
+
+\begin{cpplst}
+    void foo(int x)
+    {
+        // ...
+    }
+
+    void foo(char *c)
+    {
+        // ...
+    }
+
+    int main()
+    {
+        foo(NULL); // Ambiguous function call
+    }
+\end{cpplst}
 
 \section{Namespaces in Detail}
 
@@ -816,7 +834,7 @@ child classes get to have their own definitions.
 C++ has both a virtual keyword and an override identifier. This can be confusing because new C++ programmers
 aren't sure when it is necessary to use virtual or when to use override. The answer is that it really comes
 down to preference. The virtual keyword must be present before a member function declaration in the base class
-for it (and by extension, further overrides to it in descendent classes) to be placed in a vtable. Children of
+for it (and by extension, further overrides to it in decendent classes) to be placed in a vtable. Children of
 the base class may optionally include the virtual keyword, although it is not a requirement for the compiler.
 Similarly, the override identifier is entirely optional. If placed after a function declaration, the override
 keyword ensures that the function's signature matches that of the base class'. The override identifier may only
@@ -1013,7 +1031,8 @@ private:
 class Bar2
 {
  public:
-     Bar2() {} // f not in list
+     Bar2()
+     {}
 
 private:
      NewFoo f;
@@ -1023,7 +1042,8 @@ private:
 class Bar3
 {
 public:
-    Bar3() : f() {}
+    Bar3() : f()
+    {}
 
 private:
     NewFoo f;
@@ -1310,19 +1330,24 @@ Let's take a look at all three smart pointer types and where they are useful.
     is named such because it has sole ownership over the object it encapsulates. This means the only way to
     transfer the value held by the unique pointer would be via move semantics. Usually, it's good practice to
     only have one owner over any given object at a time anyways, so unique\_ptr should be the default go-to.
-    There are two ways we can create a unique\_ptr. The first method is to pass a new instance into the
-    unique\_ptr's constructor and the second method is to use the std::make\_unique() function. Here are
-    examples of both:
+    Smart pointers have an interesting detail which actually caused me a lot of headache on a project that I
+    was working on at one point. There are effectively two ways of initializing a smart pointer (in this case,
+    a unique pointer). The first is to pass is a heap allocated object using the new keyword into
+    std::make\_unique. The issue I was running into is that this method actually takes longer to initialize,
+    which can cause performance problems if you're creating many smart pointers. The preferred method to
+    initialize smart pointers is to directly pass in the arguments of the constructor for the object you're
+    wanting to box. Since the class is provided in the template, std::make\_unique knows which constructor
+    to invoke depending upon the arguments provided.
 
-    \begin{cpplst}
-    #include <memory>
+    %\begin{cpplst}
+    %#include <memory>
 
-    // Using new instance passed to constructor
-    std::unique_ptr<Foo> a(new Foo());
+    %// Valid, but less recommended
+    %std::unique_ptr<Foo> a = std::make_uniqe<Foo>(new Foo(1, "example"));
 
-    // Using std::make_unique()
-    std::unique_ptr<Bar> b = std::make_unique<Bar>();
-    \end{cpplst}
+    %// Preferred method
+    %std::unique_ptr<Foo> b = std::make_unique<Foo>(1, "example");
+    %\end{cpplst}
 
     The advantage of std::make\_unique() is primarily that it performs error handling and will throw an
     exception if something goes awry.
@@ -1405,9 +1430,7 @@ get() member function. This will effectively return the underlying memory held b
 
 \section{Templates}
 
-\section{Newer C++ Features}
-
-\subsection{Type Checking Using decltype}
+\section{Type Checking Using decltype}
 
 An easy way to return the type of a variable is through use of the decltype specifier. For example the assert
 statement in the example below will succeed:
@@ -1421,11 +1444,86 @@ The std::is\_base\_type<Base, Derived>() function will check if the function pas
 from the class passed in for Base. Under the hood this function uses a combination of the decltype keyword
 and static casts (which we'll look at a bit later on).
 
+\section{Other Useful Types (std::initializer\_list, std::optional, std::string\_view, std::filesystem::path)}
+
 \subsection{std::initializer\_list}
 
-\subsection{std::optional}
+By now we've seen many instances of initializer lists, but did you know that this is actually a distinct type
+in C++? If you don't believe me try having your IDE display the inferred type of an auto-assigned initializer
+list:
 
-\subsection{Lambda Expressions}
+\begin{cpplst}
+    int main()
+    {
+        auto arr = { 1.0f, 2.5f, 3.0f };
+        static_assert(std::is_same_v<decltype(arr), decltype(std::initializer_list<float>())>);
+    }
+\end{cpplst}
+
+We can explicitly utilize initializer lists by including the <intializer\_list> header file. This permits us
+to pass in initializer lists to functions as arguments akin to how one might utilize variable arguments.
+Variable arguments generally utilize a token to mark the end of the list such as NULL. Initializer lists, on
+the other hand, track the number of items internally. This lets us check the bounds using the size() member
+function, and as per usual, we can iterate over an initializer list using the begin() and end() member
+functions.
+
+\section{Lambda Functions}
+
+Lambda functions, as you are most likely aware, are short-hand, usually single-purpose/use functions that
+are meant to be terse and discrete. As with most "modern" C++ features, lambdas were introduced in C++11.
+C++ has a fairly distinct notation for creating lambda functions, specifically referring to the notation for
+capturing variables, which I'll explain shortly. A lambda function does not really differ in any meaningful
+sense from how a regular function operates, though they have slight variations, semantically speaking. Here
+is what a basic lambda function may look like:
+
+\begin{cpplst}
+    auto foo = [&](int x) -> int
+    {
+        return x + 5;
+    }
+\end{cpplst}
+
+Some points to note here. First is that we utilize the arrow operator to denote the return type (this is
+pretty common notation for most languages when it comes to lambda expressions). Another is that we can assign
+a lamda expression to a variable. It's not as if we couldn't already do this with functions too, however,
+C++ distinguishes between function pointers and lambdas as being their own distinct types.
+
+As mentioned, the most peculiar aspect of lambdas in C++ is how we capture variables. And what do I mean by
+that, you may ask? C++ allows us to specify the visibility of variables which are external to the lambda's
+scope - specifically variables which exist in the enclosing scope of where the lambda function is defined.
+We can choose between two operators: '=' and '\&'. The '=' operator indicates that we're capturing by value,
+meaning we're creating a read-only copy of any variables that we capture. On the other hand, the '\&' operator
+captures by reference, meaning that we can modify the underlying memory of captured variables. As shown in
+the previous snippet, we can capture all variables in the enclosing scope by using either of these operators
+within the square brackets. We can also, however, mix and match both capture by value and capture by reference,
+as well as getting more specific with the particular variables that we capture. Take the following example:
+
+\begin{cpplst}
+    int main()
+    {
+        std::string intro = "Once upon a time";
+        bool is_editable = true;
+
+        auto f = [is_editable, &intro]() {
+            if (is_editable)
+            {
+                intro.append(" in a galaxy far far away");
+            }
+        }
+    }
+\end{cpplst}
+
+In the example above, is\_editable is passed in by value and intro is passed in by reference. Although we can
+modify the value of is\_editable within the lambda function, it works exactly like a normal function, in the
+sense that this only affects the local copy and not the is\_editable from the enclosing scope. On the other
+hand, when we append a string to intro, this change is applied externally.
+
+Note our options here. We have the choice to either capture variables or the ability to pass variables in
+explicitly at the call site of our lambda function. Which you choose ultimately comes down to preference,
+but for the sake of anyone who may be maintaining your code, I advise you to stay consistent. Capturing
+variables is, in a sense, mildly more convenient, however, passing in parameters explicitly at the call site
+is a bit more readable, in my opinion. That being said, I tend to usually just capture everything by refernence
+and call it a day, but your milleage may vary.
 
 \section{Exceptions}
 
@@ -1476,10 +1574,10 @@ computational time into the mix). Here is the code:
 #define TPOOL_SZ 10
 
 static float sos; // Sum of square roots
+static auto m = new std::mutex();
 
 static inline void calc_sqrt(const float n)
 {
-    auto m = new std::mutex();
     m->lock();
     sos += sqrtf(n);
     m->unlock();

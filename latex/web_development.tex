@@ -3,78 +3,74 @@
 \usepackage{titling}
 \usepackage{geometry}
 \usepackage{fontspec}
-\usepackage{color}
 \usepackage{xcolor}
-\usepackage{tcolorbox}
-\usepackage{fancyhdr}
 \usepackage{hyperref}
-\usepackage[skip=11pt]{parskip}
-\usepackage[outputdir=/home/neil/.local/share/latex/output]{minted}
+\usepackage{tabularx}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{minted}
 
 \definecolor{bg}{RGB}{22,43,58}
 
-\tcbuselibrary{listings, minted, skins}
-\tcbset{listing engine=minted}
+\geometry{margin=1in}
+\setmainfont{LiberationSans}
 
 % C codeblocks
-\newtcblisting{clst}{%
-   listing only,
-   minted language=c,
-   minted style=monokai,
-   colback=bg,
-   enhanced,
-   frame hidden,
-   minted options={%
-      tabsize=4,
-      breaklines,
-      autogobble
-   }
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+\newtcblisting{cblk}{%
+    listing only,
+    minted language=c,
+    minted style=monokai,
+    colback=bg,
+    enhanced,
+    frame hidden,
+    minted options={%
+        tabsize=4,
+        breaklines,
+        autogobble
+    }
 }
 
 % TS codeblocks
-\newtcblisting{tslst}{%
-   listing only,
-   minted language=typescript,
-   minted style=monokai,
-   colback=bg,
-   enhanced,
-   frame hidden,
-   minted options={%
-      tabsize=4,
-      breaklines,
-      autogobble
-   }
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+\newtcblisting{tsblk}{%
+    listing only,
+    minted language=c,
+    minted style=monokai,
+    colback=bg,
+    enhanced,
+    frame hidden,
+    minted options={%
+        tabsize=4,
+        breaklines,
+        autogobble
+    }
 }
 
 \hypersetup{%
-   colorlinks=true,
-   linktoc=all,
-   linkcolor=gray,
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=gray
 }
 
-\setmainfont{LiberationSans}
-\geometry{%
-  margin=1in
-}
-
+% Using fancyhdr to place page no. in bottom right corner
 \fancyhf{}
-\renewcommand{\headrulewidth}{0pt}
-\fancyfoot[R]{\thepage}
 \pagestyle{fancy}
-\fancypagestyle{plain}{\pagestyle{fancy}}
-
-\renewcommand\maketitlehooka{\null\mbox{}\vfill}
-\renewcommand\maketitlehookd{\vfill\null}
-
-\title{Web Applications}
-\author{Neil Kingdom}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
 
 \begin{document}
 
+% Center title page vertically
+\renewcommand\maketitlehooka{\vfill}
+\renewcommand\maketitlehookd{\vfill}
+
 \begin{titlingpage}
-
-\maketitle
-
+    \title{Web Development}
+    \author{Neil Kingdom}
+    \maketitle
 \end{titlingpage}
 
 \newpage
@@ -85,14 +81,12 @@
 
 \section{Abstract}
 
-The purpose of this document is to give the reader a high-level overview of the plethora of advanced topics
-that are involved with the modern web ecosystem. Of course, I am only one person writing this, so I do not
-have the time or will-power to cover every concept or update this document to include every new web
-technology or framework that is released. For new web programmers who barely have any concept of how to write
-even basic HTML, I will unfortunately not be covering any language syntax, whether that be for HTML, CSS,
-JavaScript, Typescript, etc. The aforementioned languages are all very easy to learn and there are many great
-resources online if you are still just starting out. Otherwise, this document should be very accessible even
-to beginners.
+This document will focus on the evolution of web development since its inception. Of course, web dev is such
+a massive topic that we won't have time to cover every aspect in robust detail. Rather the goal is to
+demonstrate how we got to where we are now. New developers are sort of forced to jump into the deep end since
+modern frameworks stand upon the shoulders of so many old technologies that have been lost to time. Exposing
+these underlying technologies will hopefully help new devs see patterns and understand the ideas behind some
+of the decisions made.
 
 \section{Introduction}
 
@@ -129,8 +123,8 @@ last really relevant protocol used in web is Domain Name System (DNS). We'll cov
 that it's essentially how your browser is able to take a URL and convert it into an IP address that it can
 find. Speaking of IP addresses, it is somewhat important to remember that your router uses Network Address
 Translation (NAT) to convert your private IP address into a public facing IP address. On Linux, you can use the
-ip command (probably already installed on your distro) to list out your PC's private IP address. You can
-either run ip addr show, or abbreviated: ip a show. This will list the loopback, ethernet, and wireless
+ip command (probably already installed on your distro) to list out your PC's non-public facing IP address. You
+can either run ip addr show, or abbreviated: ip a show. This will list the loopback, ethernet, and wireless
 interfaces for your network card listed as something like lo, eth0, and wlan0, respectively. If not installed,
 get the nmap command. Copy your PC's IP address alongside the port and run the following:
 nmap -T4 xxx.xxx.xxx.xxx/xx. This will list all devices connected to your LAN. These should all share some
@@ -148,9 +142,9 @@ If we're to understand web, it's quite crucial to understand HTTP requests and r
 response is a protocol for HTTP servers to know how and what to fetch or send to the user. An HTTP request
 adheres to the following format:
 
-Method Request-URI HTTP-Version CRLF\\
-Headers CRLF\\
-Message-body
+<Method> <Request-URI> <HTTP-Version> <CRLF>\\
+\[Headers\] <CRLF>\\
+\[Message-body\]
 
 Let's break this down:
 
@@ -159,13 +153,12 @@ Let's break this down:
 \item{%
    \textbf{Method:} HTTP defines certain request methods which are REST compliant. We'll talk more
    about REST later. These methods include GET, POST, PUT, DELETE (these are the most common ones), HEAD,
-   CONNECT, OPTIONS, TRACE, and PATCH. GET and POST are often confused with one another. Essentially GET is
-   used to get a new resource, whereas POST is used to create or update a resource. GET is known as an
+   CONNECT, OPTIONS, TRACE, and PATCH. PUT and POST are often confused with one another. Essentially POST is
+   used to create a new resource, whereas PUT is used to create or update a resource. PUT is known as an
    idempotent request, meaning non-destructive, whereas POST is non-idempotent, meaning that it will
    overwrite previous data. For example, if creating a button that increments a shopping cart count, you'd
-   want request to be a POST request to update the count, otherwise it would remain the same if using GET.
-   HEAD is like GET but omits the response body. PUT will replace all instances of a target resource with
-   the request payload.
+   want request to be a POST request to update the count, otherwise it would remain the same if using PUT.
+   HEAD is like GET but omits the response body.
 }
 
 \item{%
@@ -198,12 +191,12 @@ Let's break this down:
    }
 
    \item{%
-       \textbf{Fragment} The fragment is an optional sub-resource that trails the octothorp/hash (#).
+       \textbf{Fragment} The fragment is an optional sub-resource that trails the octothorp/hash (\#).
    }
 
-   Example URI: http://www.example.org:8080/path/to/resource?param=value\&a=5\#paragraph3
-
    \end{itemize}
+
+   Example URI: http://www.example.org:8080/path/to/resource?param=value\&a=5\#paragraph3
 }
 
 \item{%
@@ -225,6 +218,7 @@ Let's break this down:
 \item{%
    \textbf{Message-body:} The message body is not applicable for certain HTTP methods such as GET,
    but it will apply to requests such as PUT or POST. It will usually either be XML, JSON, or HTML/text data.
+   This content is effectively sent to the server alongside the request.
 }
 
 \end{itemize}
@@ -244,27 +238,27 @@ We can see that curl made a GET request using HTTP/1.1. Since it's a get request
 see some headers in the form of User-Agent and Accept. A value of */* for accept indicates that the server can
 return anything it wants. HTTP responses look slightly different from requests, but follow a similar pattern:
 
-HTTP-Version Status-Code Reason-Phrase CRLF\\
-headers CRLF\\
-Message-body
+<HTTP-Version> <Status-Code> <Reason-Phrase> <CRLF>\\
+\[headers\] <CRLF>\\
+<Message-body>
 
 The only thing new here are the Status-Code and Reason-Phrase. You've surely seen an HTTP status code before
 whether it was a 404 - not found, 200 - ok, 500 - internal server error, 301 - moved permanently, etc.
 HTTP status codes are split into categories based on their ranges. Here are what each range represents:
 
-\begin{enumerate}
+\begin{itemize}
 
-\item Informational responses (100-199)
+\item{Informational responses (100-199)}
 
-\item Successful responses (200-299)
+\item{Successful responses (200-299)}
 
-\item Redirection messages (300-399)
+\item{Redirection messages (300-399)}
 
-\item Client error responses (400-499)
+\item{Client error responses (400-499)}
 
-\item Server error responses (500-599)
+\item{Server error responses (500-599)}
 
-\end{enumerate}
+\end{itemize}
 
 The Reason-Phrase is simply the string of text that describes the Status-Code. HTTP responses almost always
 contain a Message-body. Here is the remainder of the output of the curl command that I ran previously:
@@ -297,7 +291,9 @@ Of course, it is best to learn by doing, and so I'm going to provide the code fo
 C and then we'll go through it. This will be a repeat of the code and explanations provided in my POSIX
 Programming notes.
 
-\begin{clst}
+\newpage
+
+\begin{cblk}
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -305,83 +301,106 @@ Programming notes.
 #include <string.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <errno.h>
 #include <stdbool.h>
-#include <arpa/inet.h>  /* Internet socket APIs */
-#include <sys/socket.h> /* Berkley socket APIs */
+#include <arpa/inet.h>  // Internet socket APIs
+#include <sys/socket.h> // Berkley socket APIs
 
-#define SERVER_PORT 8080 /* Standard HTTP port */
+#define SERVER_PORT 8080
 #define CRLF "\r\n"
 
 typedef struct sockaddr sockaddr_t;
 typedef struct sockaddr_in sockaddr_in_t;
 
-int main (int argc, char **argv) {
-   int listen_fd, conn_fd, n;
-   sockaddr_in_t serv_addr;
-   uint8_t buf[LINE_MAX];
-   uint8_t recv_line[LINE_MAX];
+int main(void) {
+    // Server socket for clients to connect to
+    int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (listen_fd < 0) {
+        fprintf(stderr, "Socket error\n");
+        exit(EXIT_FAILURE);
+    }
 
-   listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-   if (listen_fd < 0) {
-      fprintf(stderr, "Socket error\n");
-      exit(EXIT_FAILURE);
-   }
+    // Server socket address (IP + port)
+    sockaddr_in_t serv_addr = {
+        .sin_family       = AF_INET,
+        .sin_port         = htons(SERVER_PORT),
+        .sin_addr.s_addr  = htonl(INADDR_ANY) // INADDR_ANY = 0.0.0.0
+    };
 
-   serv_addr = (sockaddr_in_t){
-      .sin_family       = AF_INET,
-      .sin_port         = htons(SERVER_PORT),
-      .sin_addr.s_addr  = htonl(INADDR_ANY)
-   };
+    // Bind (i.e., map) listen_fd to the address specified in serv_addr
+    if (bind(listen_fd, (sockaddr_t*)&serv_addr, sizeof(serv_addr)) < 0) {
+        fprintf(stderr, "Bind error\n");
+        exit(EXIT_FAILURE);
+    }
 
-\end{clst}
+    // Listen for connection requests (blocking)
+    printf("Waiting for a connection at 0.0.0.0:8080\n");
+    if (listen(listen_fd, 1) < 0) {
+        fprintf(stderr, "Listen error\n");
+        exit(EXIT_FAILURE);
+    }
+
+\end{cblk}
 
 \newpage
 
-\begin{clst}
+\begin{cblk}
 
-   if (bind(listen_fd, (sockaddr_t *)&serv_addr, sizeof(serv_addr)) < 0) {
-      fprintf(stderr, "Bind error\n");
-      exit(EXIT_FAILURE);
-   }
+    while (true) {
+        // Only accepting a single connection
+        int conn_fd = accept(listen_fd, NULL, NULL);
+        if (conn_fd < 0) {
+            fprintf(stderr, "Accept error\n");
+            exit(EXIT_FAILURE);
+        }
 
-   if (listen(listen_fd, 10) < 0) {
-      fprintf(stderr, "Listen error\n");
-      exit(EXIT_FAILURE);
-   }
+        printf("Client connected\n");
 
-   while (true) {
-      sockaddr_in_t addr;
-      socklen_t addr_len;
+        while (true) {
+            int nb_read = 0;
+            int total_read = 0;
+            uint8_t recv_buf[LINE_MAX] = { 0 };
+            uint8_t rply_buf[LINE_MAX] = { 0 };
 
-      printf("Waiting for a connection on port %d\n", SERVER_PORT);
-      conn_fd = accept(listen_fd, (sockaddr_t *)NULL, NULL);
+            // Read request (blocking)
+            while ((nb_read = read(conn_fd, recv_buf + total_read, sizeof(recv_buf) - total_read - 1)) > 0) {
+                total_read += nb_read;
+                recv_buf[total_read] = '\0';
+                if (strstr((const char*)recv_buf, CRLF CRLF) != NULL) {
+                    break;
+                }
+            }
 
-      memset(recv_line, 0, sizeof(recv_line));
+            if (nb_read == 0) {
+                printf("Client terminated the connection\n");
+                close(conn_fd);
+                break;
+            } else if (nb_read == -1) {
+                fprintf(stderr, "Read error\n");
+                close(conn_fd);
+                break;
+            }
 
-      while ((n = read(conn_fd, recv_line, LINE_MAX - 1)) > 0) {
-         printf("%s\n", recv_line);
+            printf("Received request:\n%s", recv_buf);
 
-         if (strstr((const char*)recv_line, CRLF CRLF) != NULL) {
-            break;
-         }
-      }
+            // Send response
+            const char *body = "Hello from server";
+            snprintf((char*)rply_buf, sizeof(rply_buf),
+                "HTTP/1.1 200 OK" CRLF
+                "Content-Length: %zu" CRLF
+                "Content-Type: text/plain" CRLF
+                "Connection: keep-alive" CRLF
+                CRLF
+                "%s",
+                strlen(body), body);
+            write(conn_fd, rply_buf, strlen((char*)rply_buf));
+        }
+    }
 
-      if (n < 0) {
-         fprintf(stderr, "Read error");
-         exit(EXIT_FAILURE);
-      }
-
-      snprintf((char*)buf, sizeof(buf), "HTTP/1.1 200 OK" CRLF CRLF "Hello from server");
-
-      write(conn_fd, (char*)buf, strlen((char*)buf));
-      close(conn_fd);
-   }
-
-   return EXIT_SUCCESS;
+    close(listen_fd);
+    return EXIT_SUCCESS;
 }
 
-\end{clst}
+\end{cblk}
 
 \newpage
 
@@ -397,26 +416,44 @@ example, the first request for me specifies root (/) as the URI, followed by /fa
 second request. ico files are used to display the icon on the tab for the current webpage and the default name
 for them is favicon.
 
-Let's run through the code now. We create 2 file descriptors: listen\_fd and conn\_fd. listen\_fd is set to be
-a TCP socket, indicated by SOCK\_STREAM (UDP would be SOCK\_DGRAM). The AF\_INET flag means "address family
-internet", which marks this file descriptor as being an internet socket, as opposed to a Berkley socket if we
-had supplied AF\_UNIX, which are used for Inter-Process Communications (not relevant to what we're talking
-about). We setup a socket address struct called serv\_addr that contains, again, the address family, as well as
-the port and address range that we want to listen for. INADDR\_ANY specifies that we want to listen for any
-connection. The htons and htonl stand for host-to-network short/long. The internet works in network-byte
-order which is fancy talk for big-endian, so putting our port number and ip address range in here ensures
-that its getting sent in the proper order (most PCs are little-endian). Next, we bind the server address to
-our listen file descriptor and listen for incomming traffic. Calling bind() immediately followed by listen() is
-almost always the use-case. Just because we're listening for connections now, doesn't mean that we're accepting
-them. Since we might have to handle many connections, we process each one in a loop. A more robust way to handle
-this sort of thing is to use a thread pool to handle each connection plus a fixed-size queue that blocks
-incoming connection requests when the queue is full. The accept() function blocks until a connection is
-established. Reading or writing to this descriptor allows us to communicate with the client. Since we know that
-our request will end with to CRLFs we use strstr() to check if the substring
-\textbackslash{}r\textbackslash{}n\textbackslash{}r\textbackslash{}n exists in the content received. Finally,
-we write our response "Hello from server" as plain text. We could optionally have made this XML, JSON, HTML,
-image data, etc. In order to write a true HTTP server, we would simply need to incorporate logic to validate
-the request, parse the URI, and respond with the appropriate resource.
+This is a lot of code, so I'll try my best to explain it bit by bit. First we create a file descriptor for the
+listen socket. The server's job is to listen for connection requests, manage those connections, and parse
+HTTP requests so that it can reply appropriately. A client on the other hand, actively initiates the connection
+request and submits further HTTP requests to PUT, POST, GET, DELETE, etc. resources. When opening the
+listen socket, we specify AF\_INET, which stands for "Address Family Internet". This means that the socket will
+be an internet socket as opposed to AF\_UNIX, which would be a berkley/unix socket used for inter-process
+communication (IPC). I cover berkley sockets in my POSIX programming doc. The SOCK\_STREAM option as the
+second argument specifies that we want to utilize TCP, as opposed to the SOCK\_DGRAM option, which would
+refer to the UDP protocol. Next, we create a sockaddr\_in struct. You'll notice that there are two typedefs
+at the top of the code: one for sockaddr and the other for sockaddr\_in. The "in" version means ipv4. There
+also exists a sockaddr\_in6, for ipv6. The socket API on Linux tries to remain consistent by using sockaddr\_t
+as sort of the blanket type when passing arguments, sort of like an interface. We can cast from sockaddr\_in
+and sockaddr\_in6 to a generic sockaddr struct because both the "in" and "in6" structs have a sockaddr struct
+as their first member. Anyways, remember that a socket is effectively an IP address + a port. Once again, we
+need to specify AF\_INET since we're using internet sockets, not berkley sockets, followed by the port and
+address we want to listen on. We use htons() and htonl() APIs here, which stand for "host to network short"
+and "host to network long", respectively. The long vesion returns a uint32\_t and the short version returns a
+uint16\_t. We need to do this because the internet uses "network byte order", which is a fancy way of saying
+that it uses big endian, whereas most computers use little endian (or "host byte order"). There exist reverse
+APIs ntohs() and ntohl() for converting from network to host. It should also be noted that INADDR\_ANY refers
+to 0.0.0.0. This is sometimes called the "default address", and it basically tells the program to listen on
+all network interfaces, including the loopback address. Using this lets clients connect from either the same
+computer on 127.0.0.1, or from another computer on the same LAN. Next, we bind, meaning we basically map the
+address we specified to point to the socket file descriptor that we created. Next we call listen(), which is a
+blocking call that waits from incomming connection requests. The first argument in the listen() function is
+the socket fd, but the second argument is the number of client requests that we allow to be added to the queue
+before we start simply rejecting further requests. This is very common in network programming. In this example
+we're only allowing a single client connection at a time. In a more robust server, you'd have a thread pool
+where each thread would correspond to its own socket and would manage the connection for a single client.
+As I stated, we're only doing one connection, so we just accept() whatever the first connection is. This will
+return a new socket fd that can be used for reading and writing. The reason we have a nested while-true loop
+is because if the client decides to refresh the page, that will close the connection and reopen a new one, so
+this allows the client to reconnect. While the connection remains established we invoke read() to get any
+incomming bytes from the client. If read() returns 0, that means the client closed the connection, and -1
+indicates an error. The headers portion of an HTTP request ends with two CRLFs in a row, hence why we check
+if the line being received contains them using strstr(). If so, we can move on to print out the full request
+and then we reply with "Hello from server". In a real HTTP server, you'd need to parse out the client request's
+URI and then perform the necessary actions.
 
 \section{Web Browsers Explained}
 
@@ -462,7 +499,14 @@ A firewall limits the ports that can and can't receive traffic on your machine. 
 Linux distros is Uncomplicated Firewall (UFW). UFW is very easy to use. It will likely begin by having ports
 80 and 443 enabled. We can enable ports for both IPV4 and IPV6, and also for TCP or UDP. As I mentioned before,
 up until recently the web has been running on TCP, so most of the time we only enable ports on TCP, but you do
-have the option if UDP is needed.
+have the option if UDP is needed. Firewalls are also capable of whitelisting or blacklisting specific IP
+addresses. Things get slightly more complicated when running your own server at home that you want people on
+other networks to be able to access. This is because each machine manages its own ports. If we want to expose
+a port to other networks, we need to do what is called port-forwarding, which is managed at the router level.
+Port-forwarding allows you to map a public facing port to a specific machines port. For example, to enable
+SSH, we could map the public port 2222 to the server's internal port 22. Now if we attempted to connect to the
+network's public facing IP at port 2222, it would get routed to the server's port 22. We still need to have
+the firewall make the server's port 22 be unblocked for it to work, however.
 
 \section{Proxies}
 
@@ -477,9 +521,9 @@ your request through 3 random relays i.e. proxies on the Tor network before the 
 (this is definitely what you should be using for privacy instead of VPNs).
 
 A reverse proxy is an application (usually ran as a daemon) that forwards client requests to a back end
-application, such as your website. The difference between a reverse proxy and a forward proxy is that forward
+application. The difference between a reverse proxy and a forward proxy is that forward
 proxies accept connections from computers on a private network and forwards them to the internet, whereas
-reverse proxies accept requests from the internet and send them to computers on a private network.
+reverse proxies accept requests from the internet and send them to computers on the private network.
 
 \section{Apache Server, NGINX, and Python Server}
 
@@ -491,18 +535,18 @@ way every website was hosted. In fact, if you run a Linux distro, you probably h
 is the root directory for the Apache server. In order to run apache, execute the httpd command (stands for
 Apache HTTP Daemon) e.g. /usr/bin/httpd (the command should ran using the full path). Now, going to
 localhost:80 or 127.0.0.1:80 will direct to the default Apache HTTP page. Replacing this page with your own
-index.html file in /var/www/ will then display that instead.
+index.html file in /var/www/ will then serve that instead.
 
 If you just need a super simple HTTP server quickly and easily on your local machine, python server is, in my
 opinion, the way to go. If you have Python installed, just run python3 -m http.server and it will launch a new
 server at 0.0.0.0:8000. Unlike Apache HTTP server which uses /var/www/ as its root directory, python server will
 just use the directory that you're currently in. If no index.html page is found at the root directory, python
-server sets up an FTP server for you!
+server sets up a local FTP server for you!
 
 My personal favorite way of setting up actual websites has to be nginx, mostly due to its easy integration with
 certbot. NGINX is a reverse proxy that you can install on your web server that will direct requests coming
-from the internet to your website or web application. NGINX has a bit of a barrier to entry being that you need
-to be able to write config files for your websites that NGINX is capable of parsing.
+from the internet to your website or web application. NGINX has a bit of a barrier to entry simply because you
+need to write very verbose configuration files, but for a simple website it is relatively simple to setup.
 
 \section{Load Balancing}
 
@@ -567,15 +611,14 @@ was deprecated in 2012, so now you just have to lookup the header to see if it's
 
 \section{Web APIs}
 
-An Application Programming Interface is typically a facade which exposes certain functions to an end user and
-handles the more complex processing in the background. APIs are everywhere in the programming domain, but I'd
-say that they are most often discussed within the web sphere. Typically, an API just refers to a function
-within a library, for example, but in web, we're usually referring more to a service. In fact, web APIs are
-usually paid services which require a monthly fee. Someone hosts the API on a server, and we can make HTTP
-requests to this server to initiate actions defined by the API. Typically these actions revolve around getting
-data. For example, some server might load data about world populations and other statistics that change over
-time into the backend store. They might provide this information via an API as a service. We can initiate an
-HTTP GET request, and some JSON or XML is returned containing this data.
+Application Programming Interfaces (APIs), are a very important aspect of web applications nowadays. When I
+reference API in programming documents, I'm typically just using the term to refer to a function belonging to
+a library. In web, APIs take on a slightly different but related meaning, which is effectively that of a
+contract for communications. A web API pretty much always refers to how clients communicate with the server.
+A front-end application will communicate with the backend via an API. Likewise, sometimes a company will offer
+an API as a paid service for other developers or businesses to utilize. For example, GitHub might offer
+endpoints that we can make HTTP GET requests to to access analytics data such as information pertaining to a
+particular user or repo.
 
 \subsection{RESTful APIs}
 
@@ -598,6 +641,16 @@ that need to be followed in order for a web API to be considered RESTful:
 \item Code on Demand (Optional)
 
 \end{enumerate}
+
+\subsection{GraphQL}
+
+\subsection{gRPC}
+
+\subsection{Webhooks}
+
+\subsection{SOAP}
+
+\subsection{JSON-RPC}
 
 \section{Service Workers}
 

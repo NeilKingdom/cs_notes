@@ -586,11 +586,13 @@ library x and function foo() in library y, C++ needs to know which foo() we are 
 declare our own namespaces by wrapping our methods in a namespace wrapper. The general syntax is as follows:
 
 \begin{cpplst}
+
 namespace namespace_name {
-	method() {
-		// Code block
+    method() {
+        // Code block
     }
 }
+
 \end{cpplst}
 
 namespace is a keyword stating that we are declaring a new namespace, namespace\_name is the name that we want
@@ -600,17 +602,19 @@ namespaces, where we have namespaces within other namespaces by wrapping them wi
 example:
 
 \begin{cpplst}
+
 namespace namespace1 {
-	foo() {
-		// Code block
+    foo() {
+        // Code block
     }
 
-	namespace namespace2 {
-		foo() {
+    namespace namespace2 {
+        foo() {
             // Code block
         }
     }
 }
+
 \end{cpplst}
 
 Now, in order to call foo() from namespace1, we would call it as: namespace1::foo(); or if we wanted to call
@@ -635,15 +639,18 @@ structs don't have constructors right? Well, in C++, a struct can indeed have co
 might have a class that appears like the following:
 
 \begin{cpplst}
-class MyClass {
-	std::string color;
-	int len;
-	bool setValue;
+
+class MyClass
+{
+    std::string color;
+    int len;
+    bool is_true;
 
 public:
-	MyClass(std::string color, int len, bool setValue);
-	~MyClass();
+    MyClass(std::string color, int len, bool is_true);
+    ~MyClass();
 };
+
 \end{cpplst}
 
 Note that the instance variables are private by default, and are therefore not visible to anything external of
@@ -651,14 +658,17 @@ the class itself, hence why we need to explicitly state that the constructor/des
 if we simply take the exact same code and replace 'class' with 'struct':
 
 \begin{cpplst}
-struct MyClass {
-	std::string color;
-	int len;
-	bool setValue;
 
-	MyClass(std::string color, int len, bool setValue);
-	~MyClass();
+struct MyClass
+{
+    std::string color;
+    int len;
+    bool is_true;
+
+    MyClass(std::string color, int len, bool is_true);
+    ~MyClass();
 };
+
 \end{cpplst}
 
 Now it is no longer necessary to make the methods public, although without a private modifier, the instance
@@ -666,22 +676,24 @@ variables are also public now. I will include another code snippet down below to
 implementation of this struct in a program:
 
 \begin{cpplst}
+
 #include <iostream>
 
-struct MyClass {
+struct MyClass
+{
     std::string color;
-	int len;
-	bool setValue;
+    int len;
+    bool is_true;
 
-	MyClass(std::string color, int len, bool setValue);
-	~MyClass();
+    MyClass(std::string color, int len, bool is_true);
+    ~MyClass();
 };
 
-MyClass::MyClass(std::string color, int len, bool setValue)
+MyClass::MyClass(std::string color, int len, bool is_true)
 {
     this->color = color;
-	this->len = len;
-	this->setValue = setValue;
+    this->len = len;
+    this->setValue = is_true;
 }
 
 MyClass::~MyClass()
@@ -690,9 +702,10 @@ MyClass::~MyClass()
 int main(void)
 {
     struct MyClass myclass1("red", 5, true);
-	std::cout << myclass1.color << std::endl;
-	std::cin;
+    std::cout << myclass1.color << std::endl;
+    std::cin;
 }
+
 \end{cpplst}
 
 Here you can see that I'm creating an instance of a struct, not a class, and because my constructor is public
@@ -735,6 +748,7 @@ a public member function named foo(), then its children B and C necessarily cont
 consider analysing this example for reference:
 
 \begin{cpplst}
+
 #include <iostream>
 
 using namespace std;
@@ -761,9 +775,8 @@ int main()
 {
     D d;
     d.foo(); // Compile-time error: Member 'foo' found in multiple base-class subobjects of type 'A'
-
-    return 0;
 }
+
 \end{cpplst}
 
 This can be resolved by either casting d to be of type B or C: ((C)d).foo(), using the scope resolution
@@ -815,12 +828,14 @@ rather than just virtual? Well, the syntax is a bit odd, but we essentially set 
 so:
 
 \begin{cpplst}
+
 class Shape
 {
 public:
     // Pure virtual function
-	virtual void calculateArea() = 0;
+    virtual void calculateArea() = 0;
 };
+
 \end{cpplst}
 
 Now anything that derives from shape must implement its own definition for calculateArea(), otherwise a
@@ -843,29 +858,39 @@ tandem with the override identifier, to suggest that any classes which inherrit 
 override the member function, effectively preventing further additions to the vtable. Here is an example:
 
 \begin{cpplst}
-class A {
-    virtual void foo() {
+
+class A
+{
+    virtual void foo()
+    {
         // Some code
-	}
+    }
 };
 
-class B : public A {
-    virtual void foo() override {
+class B : public A
+{
+    virtual void foo() override
+    {
         // Some code
-	}
+    }
 };
 
-class C : public B {
-    virtual void foo() final {
+class C : public B
+{
+    virtual void foo() final
+    {
         // Some code
-	}
+    }
 }
 
-class D : public C {
-    virtual void foo() { // Error: Declaration of 'foo' overrides a 'final' function
+class D : public C
+{
+    virtual void foo() // Error: Declaration of 'foo' overrides a 'final' function
+    {
         // Some code
-	}
+    }
 };
+
 \end{cpplst}
 
 \section{Accessing Private Members Using the friend Keyword}
@@ -879,6 +904,7 @@ at how we can make another class a friend of our class. This will allow the othe
 of the current class at any moment:
 
 \begin{cpplst}
+
 class A; // Forward class declaration
 
 class B
@@ -900,6 +926,7 @@ private:
     std::string b_can_access;
     friend class B;
 };
+
 \end{cpplst}
 
 Here, we've marked B as a friend of A. This allows B to access all members belonging to A that are private.
@@ -913,26 +940,31 @@ invoked. The parameter's name must differ from that of the member variable, but 
 For example, assume our class Foo has an int, a float, and a std::string:
 
 \begin{cpplst}
-class Foo {
+
+class Foo
+{
 public:
     Foo(int integer, float decimal, std::string sentence);
 
 private:
     int m_integer;
-	float m_decimal;
-	std::string m_sentence;
+    float m_decimal;
+    std::string m_sentence;
 }
+
 \end{cpplst}
 
 Now we can define the constructor as such:
 
 \begin{cpplst}
+
 Foo::Foo(int integer, float decimal, std::string sentence)
 {
     m_integer = integer;
-	m_decimal = decimal;
-	m_sentence = sentence;
+    m_decimal = decimal;
+    m_sentence = sentence;
 }
+
 \end{cpplst}
 
 Of course, there is another way of doing the same thing using the "this" keyword, which is a compiler
@@ -942,12 +974,14 @@ ambiguity between the two variables. Pretend we have the same class Foo, but thi
 m\_ prefix from the member variables. Here is the new constructor definition:
 
 \begin{cpplst}
+
 Foo::Foo(int integer, float decimal, std::string sentence)
 {
     this->integer = integer;
-	this->decimal = decimal;
-	this->sentence = sentence;
+    this->decimal = decimal;
+    this->sentence = sentence;
 }
+
 \end{cpplst}
 
 Between the two methods presented so far, which you use is entirely a matter of preference. There is, however,
@@ -963,11 +997,13 @@ constructor's argument list and the opening curly brace of the constructor’s c
 like:
 
 \begin{cpplst}
+
 Foo::Foo(int integer, float decimal, std::string sentence) :
-	m_integer(integer), m_decimal(decimal), m_sentence(sentence)
+    m_integer(integer), m_decimal(decimal), m_sentence(sentence)
 {
     // Any additional logic can go here
 }
+
 \end{cpplst}
 
 Initializer lists are also the method used to chain constructors. In C++ chaining constructors is known as
@@ -975,21 +1011,25 @@ Initializer lists are also the method used to chain constructors. In C++ chainin
 delegation. Take the following example code:
 
 \begin{cpplst}
+
 class DelegationExample
 {
 public:
-	DelegationExample();
-	DelegationExample(int n);
-	void setNumber(int n);
+    DelegationExample();
+    DelegationExample(int n);
+    void setNumber(int n);
 
 private:
-	int number;
+    int number;
 };
 
-DelegationExample::DelegationExample() : DelegationExample(5) {}
+DelegationExample::DelegationExample()
+    : DelegationExample(5)
+{}
+
 DelegationExample::DelegationExample(int n)
 {
-	setNumber(n);
+    setNumber(n);
 }
 
 void DelegationExample::setNumber(int n)
@@ -1000,8 +1040,9 @@ void DelegationExample::setNumber(int n)
 int main()
 {
     DelegationExample delInstance = new DelegationExample();
-	return 0;
+    return 0;
 }
+
 \end{cpplst}
 
 In this example, when delInstance gets created, the default constructor is called. Because DelegationExample
@@ -1014,6 +1055,7 @@ code is from stack overflow and demonstrates the different ways in which you cou
 initializer list and default constructor and the outcome of each method:
 
 \begin{cpplst}
+
 class NewFoo
 {
     int x;
@@ -1058,6 +1100,7 @@ int main()
     Bar3 b3a;           // x and y zero initialized
     Bar3 b3b = Bar3();  // x and y zero initialized
 }
+
 \end{cpplst}
 
 This example was borrowed from this stack overflow post:
@@ -1124,12 +1167,14 @@ constructor the compiler ought to treat as the default constructor with the defa
 example:
 
 \begin{cpplst}
+
 class Foo
 {
     Foo();
-	Foo(const Foo&) = delete;
-	Foo &operator =(const Foo&) = delete;
+    Foo(const Foo&) = delete;
+    Foo &operator =(const Foo&) = delete;
 };
+
 \end{cpplst}
 
 In this example we delete the auto-generated copy constructor, as well as the auto-generated copy operator,
@@ -1150,19 +1195,23 @@ is to avoid unwanted type promotion. For example, we can prevent type promotion 
 succeeding like so:
 
 \begin{cpplst}
-void callWithTrueDoubleOnly(float) = delete;
-void callWithTrueDoubleOnly(double param) { return; }
+
+void no_floats_allowed(float) = delete;
+void no_floats_allowed(double param) { return; }
+
 \end{cpplst}
 
-In the example above, we prevent the call to callWithTrueDoubleOnly() from succeeding if the argument is a
+In the example above, we prevent the call to no\_floats\_allowed() from succeeding if the argument is a
 float (normally it would be promoted to a double to work with the function). Note, however, that an int will
 still work in this case. Rather than create another delete function for int, we can use templates to make
 this process cleaner:
 
 \begin{cpplst}
+
 template<typename T>
-void callWithTrueDoubleOnly(T) = delete;
-void callWithTrueDoubleOnly(double param) { return; }
+void no_floats_allowed(T) = delete;
+void no_floats_allowed(double param) { return; }
+
 \end{cpplst}
 
 Another reason for deleting member functions is to remove them in child classes that inherit from a base
@@ -1177,6 +1226,7 @@ utilizing the the default keyword. Up until now, you'll have seen me make a lot 
 definitions, which is not necessary. Here's an easier way of doing the same thing:
 
 \begin{cpplst}
+
 class Foo
 {
 public:
@@ -1184,6 +1234,7 @@ public:
     Foo() = default;
     ~Foo() = default;
 };
+
 \end{cpplst}
 
 \section{Move Semantics}
@@ -1205,6 +1256,7 @@ borrowing a reference to the original object. Here's an example which illustrate
 move constructor member function:
 
 \begin{cpplst}
+
 #include <iostream>
 #include <utility>
 
@@ -1217,11 +1269,13 @@ public:
     ~Foo() = default;
 };
 
-int main(void) {
+int main(void)
+{
     Foo a = Foo();
     Foo b = std::move(a);
-    // a is invalidated. Don't use it unless you're a sadist
+    // a is invalidated. Using it is undefined behavior
 }
+
 \end{cpplst}
 
 Note in this example that if the move constructor were deleted, then the call to std::move() would fail.
@@ -1232,6 +1286,10 @@ words, if you intend to use both the copy and move constructors, either declare 
 default keyword, or declare neither and have the compiler generate them implicitly for you. The same logic
 applies to the copy-assignment and move-assignment constructors.
 
+An interview question that I've heard is to ask what happens when you call move on a const object. Const
+entities have no ability to be changed at runtime, including transfering ownership. In this unique case,
+std::move fails silently and will actually just perform a copy.
+
 \section{constexpr}
 
 The C++ keyword constexpr, pronounced "const expression" was introduced in C++ 11. It informs the compiler
@@ -1240,7 +1298,9 @@ referenced. The constexpr keyword shares the same property as the const keyword,
 functions declared with constexpr will be immutable. Here's an example of how to use constexpr:
 
 \begin{cpplst}
+
 constexpr float circumference = 2.0f * M_PI;
+
 \end{cpplst}
 
 The variable circumference would normally be computed at runtime each time it's referenced, however, placing
@@ -1250,23 +1310,433 @@ statement are also marked with constexpr (or const in the case of variables). Fo
 an error:
 
 \begin{cpplst}
+
 int j = 0;
 constexpr int k = j + 1; // Fails since j was not qualified with constexpr or const
+
 \end{cpplst}
 
 Likewise, the following is also an error:
 
 \begin{cpplst}
+
 #include <cmath>
 #include <complex>
 
 // Fails since std::exp() is not a constexpr
 constexpr std::complex<double> eulers_ident = std::exp(std::complex<double>(0.0, M_PI)) + 1.0;
+
 \end{cpplst}
 
 \section{C++ Style Casts vs C-Style Casts}
 
+Casting in C++ is actually quite the conundrum, believe it or not. To maintain backwards compatibility with
+C,  C++ implements C-style casts (using brackets), but the implementation of C-style casts function quite
+differently than they do in C (more on that later). The typical way of casting in C was simply to use the
+round brackets with the target datatype in between to indicate that a value should be cast to that type
+before variable assignment. This would look something like the following: int asciiToDec = (int)'a';  Here
+the character 'a' would be cast to int, and become 97 before being assigned to variable asciiToDec. However,
+I also mentioned that C++ was different in that casting a void pointer must be explicit. C++ has 4 standard
+types of cast that must be declared explicitly. Note that C++ has a really odd feature that C didn’t have
+whereby we can swap the bracket position for the variable and the type being cast to in a C-style cast. Here
+is an example:
+
+\begin{cpplst}
+
+char a = 'a';
+// Regular method:
+// int b = (int)a;
+// Alternative method:
+int b = int(a);
+
+\end{cpplst}
+
+I say this now so that hopefully the syntax for C++ casts makes more sense as we look at them. Without
+further ado, we’ll begin with the first type of C++ cast: const\_cast.
+
+\begin{itemize}
+
+\item{%
+    \textbf{const\_cast<T>():} A const\_cast will actually alter whether or not a variable is read-only. Ex:
+
+    \begin{cpplst}
+
+    int main()
+    {
+        const int a = 9;
+        const_case<int&>(a) = 4; // This is a valid reassignment!
+    }
+
+    \end{cpplst}
+}
+
+\item{%
+    \textbf{static\_cast<T>():} The static\_cast performs a non-polymorphic cast. For example, it can
+    cast a base class pointer to a derived class pointer. Unlike dynamic cast, static cast occurs at compile
+    time. In C++, we do not need to explicitly use static cast to downcast from a base pointer to another
+    class type which inherits from the base class, however, it is advised due to it being idiomatic. By using
+    static cast, we differentiate between const, dynamic, and reinterpret casts, unlike C-style casts, which
+    have no visual method of differentiating between each type. Ex:
+
+    \begin{cpplst}
+
+    class A {};
+    class B : public A {};
+
+    int main()
+    {
+        A a;
+        B *b = static_cast<B*>(&a);
+    }
+
+    \end{cpplst}
+}
+
+\item{%
+    \textbf{reinterpret\_cast<T>():} The reinterpret\_cast is essentially the same as static cast, but
+    whereas static cast has some compile time checks to ensure that the conversions of types make
+    intuitive sense (e.g. casting a double to an int fails), reinterpret cast has no cares about bit twidling
+    to fit a data type that does not make sense for the actual underlying data. This is essentially
+    equivallent to storing some data of one type in a void pointer in C, and then reinterpreting that data as
+    another type which may or may not make sense. This practice is known as type punning. Ex:
+
+    \begin{cpplst}
+
+    #include <iostream>
+
+    struct A
+    {
+        int x = 5;
+    };
+
+    struct B
+    {
+        int x = 10;
+    };
+
+    int main()
+    {
+        A a;
+        B *b = reinterpret_cast<B*>(&a);
+        std::cout << b->x << std::endl; // Prints 5
+    }
+
+    \end{cpplst}
+}
+
+\item{%
+    \textbf{dynamic\_cast<T>():} The dynamic cast performs a polymorphic cast. They operate at runtime and
+    will return nullptr if the cast cannot succeed. The primary use of this is to downcast a pointer or
+    reference to a base class into another class type which inherits from the base class. This is only
+    possible if the base class has at least one virtual function. Ex:
+
+    \begin{cpplst}
+
+    class A
+    {
+    public:
+        int x;
+        A() : x(7) {}
+        virtual void foo() {}
+    };
+
+    class B : public A
+    {
+    public:
+        int x;
+        B() : x(3) {}
+        virtual void foo() override {}
+    };
+
+    int main()
+    {
+        B *b = new B();
+        auto b2a = dynamic_cast<A*>(b);
+
+        if (b2a)
+        {
+            cout << b2a->x << endl; // Prints 7
+        }
+    }
+
+    \end{cpplst}
+}
+
+\end{itemize}
+
+\subsection{How C-Style Casts Work in C++}
+
+As mentioned earlier, C-style casts have a different implementation within C++, which is obfuscated from you,
+the programmer, and which makes it rather dangerous to use. When performing a C-style cast, it will attempt
+the following C++ casts under the hood, in order, until one succeeds:
+
+\begin{enumerate}
+
+\item const\_cast
+
+\item static\_cast
+
+\item static\_cast*, then const\_cast
+
+\item reinterpret\_cast
+
+\item reinterpret\_cast, then const\_cast
+
+\end{enumerate}
+
+This is pretty dangerous right of the bat, because lets say that you have a const variable, and then you
+perform a C-style cast to change its type, however you forget to add the const qualifier in front of the type
+you’re casting to. The compiler will attempt the first C++ cast, being const\_cast. Since we’re changing the
+type of the variable, the compiler will not accept this and continue to step 2. Static cast will also fail,
+due to the fact that we accidentally failed to add the const qualifer to the type being cast to. The compiler
+will then try 3, which will succeed, since it will change the variables type and remove the const qualifier
+silently, without warning us! This is even scarier if we perform a C-style cast from one type to another when
+those two types have no relationship with one another. A static\_cast will at least catch this and throw an
+error, but a C-style cast will just end up doing a reinterpret\_cast whether you like it or not. This is why
+it is so heavily discouraged to use C-style casts in C++, and why its best to stick to the primary C++ casts
+even though they can be mildly more annoying to type out.
+
 \section{Operator Overloading}
+
+Another feature that I am actually quite fond of in C++ (and I think many other people like as well), is
+operator overloading. This is pretty unique to C++ (though I’m sure other languages have this ability), a
+sort of C++ staple if you will. Have you ever wished to be able to check if 2 objects are equivellant using
+==, or perhaps wanted to increment every variable in an array using ++? This is possible in C++ because we
+can overload the definitions of operators and create our own definitions. In C++, operators are treated as
+functions, where the statements to the left and right of the operator are parameters. For example, let's say
+that we wanted to set an object of a parent class A, equal to an instance of the derived class, B (A a = B;).
+This is possible in C++ even without operator overloading, but my point is that the argument on the left of
+the = sign is treated as a parameter, as is B on the right. If = was the name of the function, this would
+sort of be like calling "=(a, B);" although this is not completely accurate. Anyhoo, parameters are implicitly
+passed for unary operators such as ++, --, \&, etc. And are explicitely passed for binary operators such as
+<<, >>, ==, =, +, -, /, *, \%, etc. So how do we actually overload an operator. Well, let me preface by
+saying that operator overloading can only be performed on classes. Within a class, we can declare a function
+using the "operator" keyword followed by the operator we want to overload.
+
+Let’s first say that we have a class called OpOverload which contains a member variable called "number". We
+want to be able to use the pre and post increment operators on instances of this class. For example, we want
+to be able to do the following:
+
+\begin{cpplst}
+
+OpOverload op;
+++op; // pre increment
+op++; // post increment
+
+\end{cpplst}
+
+where the pre and post increment operators will increment the "number" associated with the instance of the
+class. I will define the class, and the definitions for pre and post increment and explain afterwards:
+
+\begin{cpplst}
+
+#include <iostream>
+
+class OpOverload
+{
+private:
+   int number;
+
+public:
+    OpOverload() = default;
+    ~OpOverload() = default;
+
+    // Pre-increment
+    OpOverload& operator++()
+    {
+        this->number++;
+        return *this;
+    }
+
+    // Post-increment
+    OpOverload& operator++(int)
+    {
+        OpOverload& temp = *this;
+        temp.number = this->number;
+        this->number++;
+        return temp;
+    }
+};
+
+int main()
+{
+    OpOverload op;
+    ++op;
+    op++;
+}
+
+\end{cpplst}
+
+Alright, I’m sure this is quite confusing, which is to be expected because the syntax isn’t exactly pretty.
+Let’s look at pre-increment first. Recall that when we say ++op; we are sort of calling the ++ function with
+op as a parameter. Because the pre-increment operator is unary, op is passed implicitely. Notice that we also
+return a reference of the class. This is because whichever object we are pre-incrementing will essentially
+get set equal to the return value of the operator function. In other words, our instance, op, will get set =
+to the reference which is returned from our operator overload. So, we call ++(); then, we acces the member
+variable "number" which belongs to "this", which is the implicit argument that we passed, op. But hold on,
+why are we using post-increment and not pre-increment on number? Well in this case it doesn’t matter if we
+increment the number using pre or post increment because all that matters is what gets returned. Either way,
+number gets incremented before we return the reference to OpOverload, so no harm is done. As for the return
+value, we must dereference "this" before returning it since it is a pointer and we need to convert it to a
+reference. I hope you followed that, but I understand that it’s confusing.
+
+As for the post increment, well this is perhaps even more confusing. With post increment, we are also calling
+++(); but then that begs the question: what differentiates the pre and post increment overloads? How does C++
+know which you are overloading? Well this is why we placed that ominous int parameter: in order for C++ to
+recognize it as a post increment operator. You couldv’e given this parameter a name like int i, however,
+since it is useless and never gets used except to check that this is a post increment overload, I did not
+include the variable name. Moving onto the code, I create a temporary reference called temp which gets set
+equal to the implit parameter, op (once again, dereference to convert pointer to reference). We set the
+member variable "number" of the temporary reference = to the current value of "number" in "this". Then, we
+increment this->number. Notice though that we return temp, and not this. Recall that I said only what we
+return matters. Now op will be set to the reference which was returned, which was temp, so it's member,
+"number" will remain the same, until we access number on the next line, where it will be incremented since we
+said this->number++; It’s all very confusing I know. This stuff simply comes with practice.
+
+Now let’s say that we want to create a sort of "toString()" function like we have in Java, and overload the
+redirection operator << to print the member variable "number" of the object like so std::cout <<
+objectInstance << std::endl; Here is the code for that:
+
+\begin{cpplst}
+
+#include <iostream>
+
+class OpOverload
+{
+private:
+   int number;
+
+public:
+    OpOverload() = default
+    ~OpOverload() = default
+
+    // Pre-increment
+    OpOverload& operator++()
+    {
+        this->number++;
+        return *this;
+    }
+
+    // Post-increment
+    OpOverload& operator++(int)
+    {
+        OpOverload& temp = *this;
+        temp.number = this->number;
+        this->number++;
+        return temp;
+    }
+
+    friend std::ostream& operator<<(std::ostream &os, const OpOverload &op)
+    {
+        os << "Object’s number variable = " << op.number;
+        return os;
+    }
+};
+
+int main()
+{
+    OpOverload op;
+    ++op;
+    op++;
+    std::cout << op << std::endl;
+}
+
+\end{cpplst}
+
+Output: Object’s number variable = 2
+
+Notice the use of a new keyword for this one: friend. friend allows external functions or objects to access
+our classes private and public members. Since ostream must access op.number, we must declare this function as
+a friend function, essentially granting ostream permission to access our private/public members in OpOverload.
+ostream is simply short for output stream and must be returned when overloading the output redirection
+operator. The const keyword is used for our reference of OpOverload since it’s data is not modified in this
+function.
+
+Here is another slightly more complex example of operator overloading where we overload the post increment
+operator to act upon each member of a collection simultaneously (in this case std::Vector):
+
+\begin{cpplst}
+
+#include <vector>
+#include <iostream>
+
+template <class T>
+class Vec : public std::vector<T>
+{
+public:
+   std::vector<T> m_vec;
+
+   Vec(std::initializer_list<T> l) : m_vec(l) {}
+   ~Vec() = default;
+
+   void operator++(int)
+   {
+       for (auto &i : this->m_vec)
+       {
+           i++;
+       }
+   }
+};
+
+int main()
+{
+    Vec<float> vec{ 1.0f, 1.0f, 1.0f };
+    vec++;
+
+    for (auto i : vec.m_vec)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+}
+
+\end{cpplst}
+
+So, let me begin to explain myself here. Since we cannot access the vector class directly, the way in which
+we overload it is to extend it. This is why I create a new class called Vec : public std::vector<T>. You’ll
+notice that the class has been templated, i.e. it accepts any data type from the user when we create an
+instance of it, and anywhere where T arises, we can replace it with the data type that was passed. Within the
+constructor, we take in one parameter, std::initializer\_list<T> l. Initializer list is an object which
+accepts a list of variables enclosed in {} (an initializer list). This way, when we create an instance of the
+class, we can pass in a list of elements that we want to add to the vector. The class contains a member
+variable, m\_vec, which is the vector that we are actually modifying. The constructor also initializes m\_vec
+with the initializer list that we pass in.  Finally, we get to the overload of the post increment operator.
+This time we don’t need to return anything since the instance of the object is not being modified, only
+m\_vec is. An advanced for loop says that for every element in this->m\_vec (remember that this is the
+implicit lefthand parameter; in our case vec), we want to create a reference called i (a reference to the
+current next element in m\_vec). The auto keyword is common in advanced for loops, and in this case makes our
+life easier since the data type could vary. Alternatively, we could’ve said for(T\& i : this->m\_vec).
+Anyways, we simply increment each element with i++; and that’s pretty much it. The second for loop simply
+accesses m\_vec and prints every element to standard out. Notice that this even works for characters:
+
+\begin{cpplst}
+
+Vec<char> vec{'a', 'b', 'c'};
+vec++;
+
+\end{cpplst}
+
+Outputs: b c d
+
+One last trick I want to show of is that we can overload the new and delete keywords, since C++ actually
+treats them as operators. Overloading new and delete is seldomly used and is probably best avoided in
+general, however, it does give us the flexibility to effectively override the default allocator and
+deallocator if you so desire.
+
+\begin{cpplst}
+
+void* operator new(size_t size)
+{
+    std::cout << "Allocated " << size << " bytes" << std::endl;
+    return static_cast<void*>(std::malloc(size));
+}
+
+void operator delete(void *args)
+{
+    std::cout << "Deleted" << std::endl;
+}
+
+\end{cpplst}
 
 \section{Enums}
 
@@ -1422,13 +1892,305 @@ get() member function. This will effectively return the underlying memory held b
 
 \section{STL Containers}
 
+I would like to return the focus now to perhaps the most difficult aspect of C++ to master, which is the
+Standard Template Library (STL). The STL is a library which implements basic data structures and algorithms,
+such as vectors, maps, iterators, as well as algorithms for sorting, searching, and data manipulation. We’ve
+already seen some of the containers which are a part of the STL, such as std::array and std::vector. The STL
+was written sometime in the 80s, before the C++ language was even standardized. When C++ was eventually
+standardized by the ISO/IEC, the language committee decided to model parts of the C++ standard library after
+the STL. In other words, the standard C++ library implements its own version of the STL, which is similar,
+and may even look identical in some cases to the end user, though the implementation details may differ
+internally. Because they are so similar, some people (even those who understand the differences between the
+standard C++ library and the STL) will claim that the standard C++ library is the STL, when in fact, it is not.
+
 \section{Iterators}
+
+Iterators are a behavioral design pattern, which are becoming more and more common in modern programming.
+Iterators do as they suggest – they iterate over a collection or container in a linear (O(n)) way. You may
+ask yourself, why do we use iterators if we can just use a for loop? Well the argument typically goes as
+follows: For loops assume that the container uses indices when it may, in fact, not use them. For instance,
+if we iterate over a linked list using a for loop and stopping when i == ll.size, this works fine, but the
+end user may be inclined to assume that the ith element of the linked list can be accessed using the index
+operator, as suggested by the variable i e.g. ll[i]. As we know, linked lists cannot be accessed in this
+manner. An iterator, on the other hand, is agnostic about which type of collection it is iterating over. That
+being said, although I’ve heard the argument that iterators should be used whenever possible for consistency,
+I do not personally believe that they ought to replace for loops entirely. If using an interpreted language
+such as JS, for loops can provide a big performance boost. For compiled languages, your milleage may vary.
+
+In C++, iterators can be implemented by including the iterator header file. Each STL container has its own
+namespace, which we can use to access that type’s implementation of iterator e.g., vector<int>::iterator or
+list<string>::iterator. Notice that this gives us a consistent interface for declaring iterators, which
+abstracts away the implementation details of iterator for each type of container. Once we have an iterator,
+we set it equal to the element that we want to begin iterating at. Since this is usually the first element,
+we can use the begin() function which is implemented by each STL container to access its first element. We
+can then check if the iterator is smaller than container.end(), and if so increment the iterator. Here is
+some example code:
+
+\begin{cpplst}
+
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main()
+{
+    vector<int> v = { 1, 2, 3, 4, 5 };
+    vector<int>::iterator v_it;
+
+    std::cout << "The vector elements are: ";
+    for (v_it = v.begin(); v_it < v.end(); v_it++)
+    {
+        std::cout << *v_it << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+
+\end{cpplst}
+
+Note that the iterator must necessarily override the default pre and post increment/decrement operators. For
+containers which are allocated in a contiguous memory region, the iterator may simply take advantage of
+pointer arithmetic and jump forward by the size of it’s type and then check the address that the iterator is
+pointing to to see if it matches with the final element’s address. For containers which may allocate memory
+anywhere on the heap, such as a linked list, it would naturally need to override the increment/decrement
+operators so that they point the iterator towards the next or previous element in the list. If what I just
+said doesn’t make sense, that’s perfectly fine. Treating iterators as a black box until you gain a better
+grasp on pointers and data structures is not such a bad thing.
 
 \section{File I/O}
 
+Arguably one of the more convoluted aspects of C++ is how it handles file I/O. If you’re primarily used to C,
+as I am, you know that there are really only two ways of creating a file, which is either to use the FILE
+struct and fopen to return a pointer to a file stream, or to use the open() system call to return a file
+descriptor. In C++, akin to Java, we have much more options when it comes to handling I/O. You are already
+familiar with the redirection operator (<< or >>), as it is used when we print statements to stdout using
+cout. Similarly, cin reads from stdin. As you are probably aware, these are both file streams, and their C++
+implementation is contained within iostream. In order to handle file streams, we need to also include the
+fstream header file. This provides access to an object called ifstream. Well, technically speaking, ifstream
+is a typedef for basic\_ifstream<char>. If we provide a filepath as an argument to the ifstream’s
+constructor, the constructor will implicitly invoke basic\_ifstream’s implementation of open(). Alternatively,
+we can simply instantiate the ifstream and then call its open() member function later, when we are ready to
+actually open the file. The open() function signature is as follows: void open(const char *filename,
+ios\_base::openmode mode = ios\_base::in);. Note the default argument "mode", which is set to ios\_base::in
+if we do not set it manually. This parameter is actually an object of the bitmask member type openmode, which
+contains the constants in, out, binary, ate, app, and trunc. The flag bits can be OR’d together e.g.,
+ios\_base::in | ios\_base::binary if we wanted to read the file as a binary file instead of text. Rather than
+checking if the call to open() returned nullptr or something like that (as we would do in C), we instead call
+the is\_open() member function, which will return a boolean indicating whether or not the file is currently
+open. At this point, there are multiple functions that we can invoke to read the contents of said file before
+eventually calling close() (note that the destructor for ifstream calls close() implicitly).
+
+The easiest way to read the contents of a file as a string is to use the redirection operator on the ifstream
+object. For example:
+
+\begin{cpplst}
+
+#include <iostream>
+#include <fstream>
+
+int main()
+{
+    std::string contents;
+    std::ifstream fs("todo.txt");
+    if (fs.is_open())
+    {
+        while (fs.good())
+        {
+            fs >> contents;
+        }
+    }
+    fs.close();
+
+    std::cout << contents;
+    return 0;
+}
+
+\end{cpplst}
+
+Note the use of the good() member function. The redirection operator will read text until it encounters a
+white space character or newline character, meaning that if we have multiple lines we need to use a while
+loop in order to read each one. The good() member function essentially checks to see if we’ve reached the
+EOF, an error occurred, or if there was a R/W error. There is also the bad() member function, which only
+checks if a R/W error occurred. Alternatively, we could have just done while (fs), which is equivallent to
+while (fs.good())
+
+Similar to ftell() in C, we can use the tellg() member function (stands for tell get) to return the current
+position of the file pointer as it moves through the stream. Once the entire file has been traversed, this
+function returns -1.
+
+Another way we can read files is by using the getline() member function. This is pretty much just a wrapper
+around the redirection operator which returns the line that it read, not including the newline character.
+
+I’ve also seen people use iterators to read an entire file as a string, which I have no opinion on in terms
+efficiency or readability or any of that. None-the-less, it’s still good to be able to know that there are
+other ways of doing the same operation. Here is an example of this:
+
+\begin{cpplst}
+
+std::string contents(
+    std::istreambuf_iterator<char>(ifs),
+    std::istreambuf_iterator<char>()
+);
+
+\end{cpplst}
+
+What's happening here is likely not obvious to new C++ programmers. Essentially, std::string has a
+constructor which accepts two parameters, both of which are iterators. Here is the definition for said
+constructor:
+
+\begin{cpplst}
+
+template <class InputIterator>
+std::string(InputIterator first, InputIterator last);
+
+\end{cpplst}
+
+This constructor actually just invokes the assign() member function which has  the same method signature.
+What assign() does is replace the current contents of a string within the range specified by InputIterator
+first and InputIterator last. Recall that std::ifstream is just a typedef for basic\_ifstream<char>, and
+istreambuf\_iterator<char> is an input iterator that can read successive elements from a stream buffer. If
+you look up the constructor for istreambuf\_iterator on cppreference, you’ll see that the empty constructor
+constructs an end-of-stream iterator, and the constructor which accepts a std::basic\_istream initializes
+the iterator and stores the value of is.rdbuf(). I know that this is perhaps starting to become confusing,
+but is.rdbuf() is actually what tellg() returns (the file pointer’s position). So in other words, the empty
+iterator returns and end-of-stream iterator and the non-empty one returns the current position of the file
+pointer (which is pressumably 0 if we just opened the file). Then we construct a string from these two
+iterators using std::string’s assign() member function!
+
 \subsection{String Streams}
 
+Continuing off of file streams, I wanted to also discuss string streams. String streams are kind of like
+StringBuilder in Java. They allow us to construct and parse strings. To use string streams, we include the
+<sstream> header. A Stringstream object can optionally accept an initial string as a constructor parameter.
+Since a Stringstream is a stream, similar to an ifstream, we can use the redirection operator to append
+strings or emit strings. Recall that the output redirection operator will emit up until the next whitespace
+character or newline is encountered.
+
 \section{Templates}
+
+You may or may not have used templates in other programming langauges before. In case you have never used
+templates before, I will summarize their utility. A template typically allows us to omit type information for
+a given variable or function parameter so that we can polymorphically reuse code by substituting the type that
+we want when the class is instantiated or function is invoked. Due to the fact that we can substitute any
+type that we like by default, we refer to the placeholder value as ‘generics’. In order to create a template
+in C++, we simply use the ‘template’ keyword, followed by opening and closing karats (<>), which will enclose
+one of two additional keywords (I’ll demonstrate what these are in a moment), as well as the name of the
+generic or generics. Assume that we have a function which adds two values called add(). Now assume that we
+want to be able to have three versions of the add() function: one for ints, one for floats, and one for
+doubles. Your instinct may jump to using function overloads. Overloads can become cumbersome, however, since
+we must type out the same function three times with the only difference being in the types that we assign to
+our parameters. This is solved with templates with the following code:
+
+\begin{cpplst}
+
+template <typename T>
+T add(T a, T b)
+{
+    return a + b;
+}
+
+\end{cpplst}
+
+When we want to invoke the add() function, we must now do so as add<T>(), where 'T' is the type that we want
+to pass in to our template as the generic. Here is the full code snippet:
+
+\begin{cpplst}
+
+#include <iostream>
+
+template <typename T>
+T add(T a, T b)
+{
+    return a + b;
+}
+
+int main()
+{
+    double result = add<float>(2.5f, 0.9f);
+    std::cout << result << std::endl;
+
+    return 0;
+}
+
+\end{cpplst}
+
+If you’re wondering why I’m using double for the result, it’s simply because that is the widest type for
+floating point, so whether we use int, float, or double, result can store the return value. Anyhow, notice
+that when we specified float as the generic, the return type as well as both parameters (a and b) became
+floats. The beauty of this approach is that the compiler will generate a unique add() function at compile
+time for each type variant that it is invoked with. So for instance, if I were to invoke add() twice, once
+with int and once with float, it would generate two variants of the function. It is essentially doing
+function overloading for us behind the scenes. The downside to templates is that we can really pass in any
+type that we like as the generic and the compiler may or may not complain. For example, heres the same code,
+but now I’ve changed the function arguments and type for result:
+
+\begin{cpplst}
+
+#include <iostream>
+
+template <typename T>
+static T add(T a, T b)
+{
+    return a + b;
+}
+
+int main()
+{
+    string result = add<string>("a", "b");
+    std::cout << result << std::endl;
+
+    return 0;
+}
+
+\end{cpplst}
+
+As you can guess, this is still valid code, but using the add() function to concatonate strings was likely
+not the programmer’s intention. In order to prevent certain types from being substituted as the generic, we
+use the static\_assert() function. As you may or may not know, static\_assert(), unlike assert(), performs a
+compile-time assert. Since generics are substituted at compile-time, static\_assert() can check for types
+that we want to blacklist or filter out. Something clever that most people do is to use the ‘using’ statement
+to create a type alias. This can be a bit confusing to follow, especially since I haven’t covered some of the
+functions being used here, but I’ll throw out the example anyways:
+
+\begin{cpplst}
+
+#include <iostream>
+#include <type_traits>
+
+using namespace std;
+
+template <typename T>
+using _T = typename enable_if<
+    is_same<int, T>::value ||
+    is_same<float, T>::value ||
+    is_same<double, T>::value,
+    T
+>::type;
+
+template <typename T>
+_T<T> add(_T<T> a, _T<T> b) {
+    return a + b;
+}
+
+int main()
+{
+    float result = add<float>(1.0f, 1.0f);
+    cout << result << endl;
+
+    return 0;
+}
+
+\end{cpplst}
+
+Here, \_T is an alias that only exists if T is either an int, float, or double, otherwise the type is
+undefined and the compilation fails. This works due to enable\_if<T, U>::type, which I’ll let you read up on.
+The type that we substitute the generic type T for when calling add<T>() will be wrapped by the
+enable\_if<T, U>::type check, aliased as \_T.
+
+I mentioned two keywords that we could use in the template declaration. The first, we’ve already seen, which
+is typename. The second is the class keyword. When simply defining templates, these two keywords may be used
+interchangeably. There are cases, however
 
 \section{Type Checking Using decltype}
 
@@ -1436,8 +2198,10 @@ An easy way to return the type of a variable is through use of the decltype spec
 statement in the example below will succeed:
 
 \begin{cpplst}
+
 int a;
 assert((std::is_same_v<decltype(a), int>));
+
 \end{cpplst}
 
 The std::is\_base\_type<Base, Derived>() function will check if the function passed in for Derived is derived
@@ -1446,6 +2210,33 @@ and static casts (which we'll look at a bit later on).
 
 \section{Other Useful Types (std::initializer\_list, std::optional, std::string\_view, std::filesystem::path)}
 
+Similar to modern languages e.g. TypeScript or Rust, C++ attempts to mitigate the use of nullptr by providing
+us with the std::optional<T> template. This template, introduced in C++17, allows us to wrap some data in the
+std::optional type. An std::optional can either contain no data, or some data. In order to perform a check,
+we can use the std::optional’s member function has\_value(), which returns true if the std::optional does
+contain some data, or false otherwise. The value() member function is essentially a getter for the value if
+the std::optional does contain something. Rather than tediously checking has\_value() followed by value() each
+time we want to access an std::optional, we can use the value\_or() member function, which either accesses
+the underlying data if it exists, or returns the value that we provide as an argument if empty. Here is a
+code snippet example:
+
+\begin{cpplst}
+
+#include <iostream>
+#include <optional>
+
+int main()
+{
+    std::optional<int> opt = std::nullopt;
+    std::cout << "opt: " << opt.value_or(5) << std::endl; // Prints 5
+    opt = 10; // This works because std::optional overloads the assignment operator
+    std::cout << "opt: " << opt.value_or(5) << std::endl; // Prints 10
+
+    return 0;
+}
+
+\end{cpplst}
+
 \subsection{std::initializer\_list}
 
 By now we've seen many instances of initializer lists, but did you know that this is actually a distinct type
@@ -1453,11 +2244,13 @@ in C++? If you don't believe me try having your IDE display the inferred type of
 list:
 
 \begin{cpplst}
-    int main()
-    {
-        auto arr = { 1.0f, 2.5f, 3.0f };
-        static_assert(std::is_same_v<decltype(arr), decltype(std::initializer_list<float>())>);
-    }
+
+int main()
+{
+    auto arr = { 1.0f, 2.5f, 3.0f };
+    static_assert(std::is_same_v<decltype(arr), decltype(std::initializer_list<float>())>);
+}
+
 \end{cpplst}
 
 We can explicitly utilize initializer lists by including the <intializer\_list> header file. This permits us
@@ -1477,10 +2270,12 @@ sense from how a regular function operates, though they have slight variations, 
 is what a basic lambda function may look like:
 
 \begin{cpplst}
-    auto foo = [&](int x) -> int
-    {
-        return x + 5;
-    }
+
+auto foo = [&](int x) -> int
+{
+    return x + 5;
+}
+
 \end{cpplst}
 
 Some points to note here. First is that we utilize the arrow operator to denote the return type (this is
@@ -1499,18 +2294,20 @@ within the square brackets. We can also, however, mix and match both capture by 
 as well as getting more specific with the particular variables that we capture. Take the following example:
 
 \begin{cpplst}
-    int main()
-    {
-        std::string intro = "Once upon a time";
-        bool is_editable = true;
 
-        auto f = [is_editable, &intro]() {
-            if (is_editable)
-            {
-                intro.append(" in a galaxy far far away");
-            }
+int main()
+{
+    std::string intro = "Once upon a time";
+    bool is_editable = true;
+
+    auto f = [is_editable, &intro]() {
+        if (is_editable)
+        {
+            intro.append(" in a galaxy far far away");
         }
     }
+}
+
 \end{cpplst}
 
 In the example above, is\_editable is passed in by value and intro is passed in by reference. Although we can
@@ -1522,8 +2319,8 @@ Note our options here. We have the choice to either capture variables or the abi
 explicitly at the call site of our lambda function. Which you choose ultimately comes down to preference,
 but for the sake of anyone who may be maintaining your code, I advise you to stay consistent. Capturing
 variables is, in a sense, mildly more convenient, however, passing in parameters explicitly at the call site
-is a bit more readable, in my opinion. That being said, I tend to usually just capture everything by refernence
-and call it a day, but your milleage may vary.
+is a bit more readable, in my opinion. That being said, I tend to usually just capture everything by
+reference and call it a day, but your milleage may vary.
 
 \section{Exceptions}
 
@@ -1543,10 +2340,12 @@ void *(*routine)(void *args). Looking at the man page for std::thread will revea
 is a bit more convoluted:
 
 \begin{cpplst}
+
 template<typename _Callable, typename... _Args, typename = _Require<__not_same<_Callable>>>
 thread(_Callable &&__f, _Args &&... __args)
 thread (const thread &) = delete
 thread (thread &&__t) noexcept
+
 \end{cpplst}
 
 Before I break this down, I just want to preface by reminding you that threads objects in C++, so
@@ -1564,76 +2363,79 @@ consecutive powers of i (of course taking the square root of a power is quite re
 computational time into the mix). Here is the code:
 
 \begin{cpplst}
+
 #include <iostream>
 #include <array>
 #include <thread>
 #include <mutex>
 #include <cmath>
-#include <iterator>
 
 #define TPOOL_SZ 10
 
-static float sos; // Sum of square roots
+static float sos; // Sum of squares
 static auto m = new std::mutex();
 
-static inline void calc_sqrt(const float n)
+static inline void add_square(const float n)
 {
     m->lock();
-    sos += sqrtf(n);
+    sos += std::powf(n, n);
     m->unlock();
 }
 
 int main()
 {
-    int count = 0;
-    auto threads = std::array<std::thread, TPOOL_SZ>();
-    std::array<std::thread, TPOOL_SZ>::iterator i;
+    int n = 0;
+    auto threads = std::array<std::thread, TPOOL_SZ>{};
 
-    for (i = threads.begin(); i != threads.end(); ++i, ++count)
+    for (auto it = threads.begin(); it != threads.end(); ++it, ++n)
     {
-        threads.at(count) = std::thread(calc_sqrt, std::pow(count, count));
+        threads[n] = std::thread(add_square, n);
     }
 
-    for (i = threads.begin(); i != threads.end(); ++i)
+    for (auto it = threads.begin(); it != threads.end(); ++it)
     {
-        i->join();
+        it->join();
     }
 
-    std::cout << "Sum of Square Roots: " << sos << std::endl;
+    std::cout << "Sum of Squares: " << sos << std::endl;
 
-   return EXIT_SUCCESS;
+    delete m;
+    return EXIT_SUCCESS;
 }
+
 \end{cpplst}
 
 This is pretty standard stuff as far as multithreading goes. Create a thread pool, use a synchronization
 primitive like a mutex to lock on critical write segments and then block until each thread is finished using
-join() before printing the result. Unfortunately, we are doing a bit of a nono with the mutex. Reading the
+join() before printing the result. Unfortunately, we are doing a bit of a no-no with the mutex. Reading the
 man page for std::mutex tells us that we should not call lock() and unlock() directly, but instead use a
 scoped lock such as std::unique\_lock, std::lock\_guard, or std::scoped\_lock. The reason that C++ advises us
-to use lock() and unlock() directly is mostly due to the fact that this ignores Resource Acquisition Is
+to not use lock() and unlock() directly is mostly due to the fact that this ignores Resource Acquisition Is
 Initialization (RAII). This is a popular idiom within C++ that proposes initialization/acquisition should
 occur within the constructor of the object, and that deallocation should occur at the end of the object's
-lifetime i.e., in the destructor. This is basically the entire idea behind smart pointers. In this scenario,
-we could also use an atomic type instead of the mutex like so:
+lifetime i.e., in the destructor. This is basically the entire idea behind smart pointers.
+
+\subsection{Atomics}
+
+An alternative to using syncronization mechanisms for basic operations in multi-threaded code is to use
+atomic types and atomic operations. An atomic operation is one which occurs within one CPU cycle, meaning that
+there is no chance for race conditions to occur. Atomic types only support very basic operations, such as
+adding, subtracting, bitwise ORing, XORing, etc. If the type is an atomic type, C++ will implicitly perform
+these operations when utilizing the standard operators, but it is heavily recommended that you invoke
+the appropriate member functions explicitly.
 
 \begin{cpplst}
-#include <iostream>
-#include <array>
-#include <thread>
+
 #include <atomic>
-#include <cmath>
-#include <iterator>
 
-#define TPOOL_SZ 10
-
-static std::atomic<float> sos; // Sum of square roots
-
-static inline void calc_sqrt(const float n)
+int main()
 {
-    sos = sos + sqrtf(n);
+    std::atomic<float> atom = 5;
+    atom.fetch_add(5); // Same as doing += 5
+
+    return 0;
 }
 
-// ...
 \end{cpplst}
 
 \end{document}

@@ -1,0 +1,65 @@
+\documentclass{article}
+
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{minted}
+
+\definecolor{bg}{RGB}{22,43,58}
+
+\geometry{margin=1in}
+\setmainfont{LiberationSans}
+
+% C codeblocks
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+\newtcblisting{cblk}{%
+    listing only,
+    minted language=gas,
+    minted style=monokai,
+    colback=bg,
+    enhanced,
+    frame hidden,
+    minted options={%
+        tabsize=4,
+        breaklines,
+        autogobble
+    }
+}
+
+\hypersetup{%
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=gray
+}
+
+% Using fancyhdr to place page no. in bottom right corner
+\fancyhf{}
+\pagestyle{fancy}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+% Center title page vertically
+\renewcommand\maketitlehooka{\vfill}
+\renewcommand\maketitlehookd{\vfill}
+
+\begin{titlingpage}
+    \title{Assembly}
+    \author{Neil Kingdom}
+    \maketitle
+\end{titlingpage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\end{document}

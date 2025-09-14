@@ -1,0 +1,2356 @@
+\documentclass{article}
+
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{minted}
+
+\definecolor{bg}{RGB}{22,43,58}
+
+\geometry{margin=1in}
+\setmainfont{LiberationSans}
+
+% C codeblocks
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+\newtcblisting{cblk}{%
+    listing only,
+    minted language=c,
+    minted style=monokai,
+    colback=bg,
+    enhanced,
+    frame hidden,
+    minted options={%
+        tabsize=4,
+        breaklines,
+        autogobble
+    }
+}
+
+\hypersetup{%
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=gray
+}
+
+% Using fancyhdr to place page no. in bottom right corner
+\fancyhf{}
+\pagestyle{fancy}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+% Center title page vertically
+\renewcommand\maketitlehooka{\vfill}
+\renewcommand\maketitlehookd{\vfill}
+
+\begin{titlingpage}
+    \title{C Programming Basics}
+    \author{Neil Kingdom}
+    \maketitle
+\end{titlingpage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Abstract}
+
+This document covers as much as I could humanly write about the C programming language. I’ve been programming
+for approximately 5 years or so, mostly in C, although I started writing this document way back when I first
+learned C, so please forgive for any misinformation that got overlooked. I try to update the document any time
+I discover something new about the language or discover that my presuppositions were wrong. I hope you get
+something out of reading this, as that is all I could hope for after putting many hours into it. Happy
+programming!
+
+\section{Introduction}
+
+The C programming language is primarily attributed to a programmer named Dennis Ritchie. Most programmers tend
+to associate C with operating systems – a) because it is a good language for interfacing with low level
+hardware, and b) because of the success of Unix/Linux, which were both written in C. The Unix operating system
+was created in the 1960s in Bell Laboratories (Bell Labs for short). Unix was originally written in assembly
+language, but in 1973 Unix was rewritten by Dennis Ritchie and Brian Kernighan. Another important figure who
+also worked at Bell Labs on Unix was Ken Thompson. Ken Thompson was the founder of the B language, which C
+was based off. In the 1980s, the POSIX standard was invented to help standardize Unix systems, as there were
+many companies who were making their own forks of Unix such as Sun Microsystems (later aquired by Oracle). As
+you probably know, Linus Torvalds eventually created the Linux kernel, which was heavily based off Unix and is
+still being maintained by Linus and the Linux community to this very day. C has had many releases over the
+years. The first release was called K\&R (Kernighan and Ritchie), based off the C Programming Language book
+that they co-authored. K\&R had very sloppy documentation, and only covered what Brian and Dennis felt was
+necessary to document. K\&R also permitted a lot of undefined behaviour which meant that writing certain code
+on one system might have completely different effects from another. It wasn’t until 1989 that we got ANSI C,
+also known as C89. The American National Standards Institute (ANSI) created a standard specification of C;
+something that programmers and compiler engineers could unanimously appeal to. ANSI C still wasn’t perfect,
+however. In 1990, the International Organization for Standardization (ISO - not to be confused with the file
+format) created another specification of C known as ISO/IEC 9899:1990, a.k.a. C90. C89 and C90 are essentially
+the same standard, which is why C90 is usually overlooked. In 1995, the ISO published an extension to C90
+which added some new features. This specification was called ISO/IEC 9899/AMD1:1995, or simply, C95. In 2000,
+ANSI adopted the ISO/IEC 9899:1999 standard aka C99. In 2011, another revision, informally known as C1X was
+created (a.k.a. C11). The newest release to date is C23, which again, adds a few keywords and features. The
+GNU project has their own variants for each of these standardizations to coincide with glibc (which I’ll cover
+later in this document).
+
+\section{Data Types}
+
+Where better to start than variables? Arguably the most basic yet essential units of code are variables. If
+you’re familiar with programming at all, you know that variables contain values and that the values they
+contain can assume various types, known as data types. Data types always have a specified size in memory.
+These sizes are defined within the language specification, but can sometimes vary depending on the platform
+architecture. In other words, the size of an int may vary from a 32-bit machine to a 64-bit machine.
+Unfortunately, this can get quite confusing. I will be covering each of the primitive data types individually.
+This might seem like a lot of stuff to remember, however, understanding the size of variables is very
+important when writing C code. We must be much more considerate of how much space we are occupying when
+writing code in C.
+
+\subsection{Void}
+
+The void type is what we call a “unit type”, which is a commonly recurring type found in other programming
+languages as well. It is both a valid type and an invalid type simultaneously. We cannot create a variable of
+type void, unless it is a pointer of type void*, which we will get to later. void is primarily used as the
+return type for functions. Essentially, it tells the compiler that the function returns nothing, which is why
+it makes sense for functions, but less so for variables (since a variable cannot store nothing). An empty
+return statement is valid for functions that return type void, but it is not required (this is typically only
+used for early returns). As an interesting but useless tidbit, void occupies a single byte of memory, even
+though it stores no data. This can be observed by printing sizeof(void).
+
+\subsection{Char}
+
+Char, short for character, is a \textit{numeric} data type. A char is \textit{always} stored as an integer
+which is usually translated to a glyph on the screen. You will often hear from folks on the internet that a
+char occupies 1 byte in C. This is not technically correct. A char in C is at \textit{minimum} 1 byte, and
+often occupies 1 byte since we typically use ASCII or UTF-8, but in UTF-16, a char is 2 bytes (16 bits = 2
+bytes). The actual size of char depends on the locale of your system – something that can be changed from
+within your C program (see my POSIX programming notes for more info on that). Assuming that a char is 1 byte
+in most cases, the range can either be -128 to 127 if signed, or 0 to 255 if unsigned. Valid character
+literals are considered to be any one character surrounded by single quotes e.g., 'z'. Not all valid character
+literals must be alpha-numeric. For instance, escape characters are also considered as valid character
+literals. An escape sequence is simply another way of representing a numeric value (normally represented in
+decimal, octal, or hexadecimal). Typically, characters which are represented as escape sequences have special
+meaning or functionality. For example, '\textbackslash{}n', '\textbackslash{}t', '\textbackslash{}b',
+'\textbackslash{}0', etc. are all special characters that may or may not be interpreted to have some special
+functionality (the C specification says nothing about special characters – it is the OS that defines and
+implements the behaviour for these characters).
+
+\subsection{Optional Reading (Advanced): Character Control Sequences}
+
+Pertaining to XTerm (the standard terminal emulator for X11), character literals become much more confusing.
+Technically, we are no longer talking about character literals, but rather, XTerm control sequences. The
+reason I’m discussing Xterm control sequences is because they closely resemble character literals, and can be
+stored as character literals, though they are not technically character literals. XTerm defines 4 types of
+control sequences:
+
+\begin{itemize}
+
+\item{%
+    \textbf{C}:  A single (required) character
+}
+
+\item{%
+    \textbf{Ps}: A single (usually optional) numeric parameter, composed of one or more digits
+}
+
+\item{%
+    \textbf{Pm}: Multiple numeric parameters, separated by semi-colon. Individual values for these parameters
+    are listed with Ps (see above)
+}
+
+\item{%
+    \textbf{Pt}: A text parameter composed of printable characters
+}
+
+\end{itemize}
+
+A standard known as ECMA-48 (aka ISO 6429) specifies two types of code. \textbf{C0} is a 7-bit code, and
+\textbf{C1} is an 8-bit code. \textbf{C0} and \textbf{C1} are both subsets of C. ECMA-48 does not refer to
+\textbf{C0} or \textbf{C1} as characters, since the term character is oft confused to mean "visible glyph".
+\textbf{C0} can be any decimal from 0 to 31 and also decimals 32 and 127, and \textbf{C1} can be any integer
+from 128 to 159. \textbf{C0} control bytes are used for all sorts of purposes such as text layout, transmission
+and device control, etc. \textbf{C1} control bytes are primarily used for displays and printers. \textbf{C1}
+is the set that is related to ANSI escape sequences and VT100 terminals, and thus, the set that we are most
+interested in. ECMA-48 processes a control sequence until the sequence is terminated by a terminating byte, or
+until it finds a byte which does not belong to the sequence. Here are some examples of \textbf{C1} control
+characters:
+
+\begin{center}
+    \begin{tabularx}{\textwidth}{
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X |}
+        \hline
+        Keyboard Sequence & ASCII Character & Hexadecimal & Semantic Meaning \\
+        \hline
+        ESC D & IND & 0x84 & Represents an index \\
+        \hline
+        ESC E & NEL & 0x85 & Represents the next line \\
+        \hline
+        ESC X & SOS & 0x98 & Represents the start of a string \\
+        \hline
+        ESC [ & CSI & 0x9D & Begins a control sequence \\
+        \hline
+    \end{tabularx}
+\end{center}
+
+These are basic control characters that are used by your terminal unbeknownst to you. The curses and ncurses
+libraries are the best examples for how these control sequences are used in a practical sense. By selecting
+control sequences that manipulate the terminal output, we can create TUI applications. Let’s look at a
+practical example by changing the foreground color of your terminal’s text output. By entering the command
+printf "\textbackslash{}033[91mThis is red text\textbackslash{}n\textbackslash{}033[0m" into your terminal,
+you will see it output "This is red text" in red. Let’s break down the control sequence that we just printed.
+The first character is an escape character, which tells the terminal that we are about to print a character
+literal. 0 in C indicates an octal number, so 033 is interpreted as octal 33. Looking at an ASCII chart, we
+see that octal 33 is the ESC (escape) character. As we seen earlier, ESC followed by [ is the \textbf{C1}
+control byte to begin a control sequence (also known as \textbf{CSI} (Control Sequence Introducer) in the ANSI
+control sequence atlas). If we do a bit more digging into the XTerm specification, we find that the control
+sequence CSI \textbf{Pm m} alters character attributes. Remember that \textbf{Pm} can be a list of multiple
+parameters separated by semi-colons, and that parameters are expressed as \textbf{Ps}. The \textbf{Ps} values
+for foreground and background color may differ depending on whether or not your terminal uses 16 colors.
+Anyhow, we see that when \textbf{Ps} = 9 followed by 1, it sets the foreground to Red! We also see that 0 sets
+it back to normal. Now, say we wanted to create blinking and underlined text with a white background and black
+foreground. All we have to do is find the correct \textbf{Ps} values within the specification. The resulting
+control sequence, which you can test on your terminal is "\textbackslash{}033[4;5;90;107mBlinking, Underlined,
+FG Black, BG White\textbackslash{}n\textbackslash{}033[0m". Do a printf of that on your terminal and be
+impressed. If you’re wondering how I got the \textbf{Ps} values for \textbf{Pm}, they can be found in XTerm’s
+documentation
+\href{https://invisible-island.net/xterm/ctlseqs/ctlseqs.html\#h3-Application-Program-Command-functions}{here}.
+Another resource which I found helpful can be found
+\href{https://www.aivosto.com/articles/control-characters.html}{here}.
+
+\subsection{Int}
+
+int, short for integer, is probably the most commonly used numeric data type in C. int is another data type
+that may vary in size depending on platform. Typically, it will be 2 bytes on 32-bit platforms, and 4 bytes on
+64-bit platforms. I will be assuming that you are on a 64-bit machine for the remainder of the document,
+meaning that I will treat ints as 32-bit, but be aware that this is generally not a good assumption to make,
+especially when writing code that is cross-platform. Without specifying the sign, int is implicitly set to be
+signed. Despite this, ints can be explicitly marked as unsigned. For an int that is signed, the range is
+-2,147,483,648 to 2,147,483,647 and for unsigned, the range is 0 to 4,294,967,295. Integer literals are
+commonly represented with prefixes or with suffixes.
+
+\begin{itemize}
+
+\item{%
+    \textbf{Prefixes}: Prefixes begin at the front of a literal
+    \begin{itemize}
+
+        \item{%
+            Binary literal (base 2): Begins with '0b' e.g. 0b00001111, 0b01010101. Please note that binary
+            literals are only supported by some compilers and are not generally portable.
+        }
+
+        \item{Octal literal (base 8): Begins with '0' e.g. 0777, 0123, 0655}
+
+        \item{Hex literal (base 16): Begins with '0x' e.g. 0xFFFF, 0xC0FFEE, 0x01}
+
+    \end{itemize}
+}
+
+\item{%
+    \textbf{Suffixes}: Suffixes are placed at the end of a literal. These are dependent on the integer type.
+    Since int is technically considered to be the default integer type, it does not have its own dedicated
+    suffix. However, we can still give it the ‘u’ or ‘U’ suffix to specify that it is an unsigned int. For
+    example: unsigned int i = 100u; Note that suffixes are mostly optional. Other than a few circumstances,
+    they generally only help to add clarity.
+}
+
+\end{itemize}
+
+\subsection{Short}
+
+short is short form for "short int" (say that 5 times fast). A short int is always 2 bytes i.e. 16 bits. Note
+that on 32-bit platforms, short is the same size as an int, which basically makes short useless on 32-bit
+machines. short can also be signed or unsigned. Again, like int, it is implicitly set to be signed if no sign
+is given. The range for signed short is -32,768 to 32,767 and for unsigned its 0 to 65,535. Short can either
+be written as just "short" or "short int". For example, the following lines are equivallent:
+
+\begin{cblk}
+short shrt = 10000;
+short int shrt = 10000;
+\end{cblk}
+
+Same as int, a suffix of ‘u’ or ‘U’ to specify that it is an unsigned short.
+
+\subsection{Long}
+
+long is short form for "long int". A long int can be 32-bits (4 bytes) or 64-bits (8 bytes), depending on
+platform. Same as short int, long can either be written as just "long" or as "long int". longs can be signed
+or unsigned. long is implicitly signed if no sign is given. For a signed 64-bit long, the range is
+-9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 and for unsigned, it is 0 to 18,446,744,073,709,551,615!
+long has its own dedicated suffix, which is ‘l’ or ‘L’. This can be used in conjunction with ‘u’ and ‘U’. For
+example, the following line is valid:
+
+\begin{cblk}
+unsigned long l = 100000000ul;
+\end{cblk}
+
+\subsection{Long Long}
+
+long long was primarily designed for 32-bit machines where a long was 32-bit. Since int was also 32-bit, long
+was pretty much useless. Thus, we were given long long, or long long int, which is always 8 bytes. The range
+will still be the same as what I specified in the previous section, since I was talking about 64-bit longs.
+long long also has its own suffix ‘ll’ or ‘LL’ which can also be used with ‘u’ or ‘U’. For example:
+
+\begin{cblk}
+long long int bignum = -999999999999LL;
+\end{cblk}
+
+\subsection{Float}
+
+We are now moving away from integer types, and entering decimal types, a.k.a. floating-point integers. While
+still numeric, floating-point types do not represent themselves the same way that normal binary integers do.
+Instead, they are represented by a format called IEEE-754 by the ISO standard. Note that IEEE-754 is not the
+only method of representing decimal types (IEEE-754 is known as floating point notation, but there also exists
+something called fixed point notation, which we will not be covering here, but that I recommend you look up).
+float is short for "single-precision floating point integer". This is a fancy way of saying that it’s a 32-bit
+decimal number. floats \textit{must} be signed because the Most Significant Bit (MSB) is dedicated for storing
+the sign within their binary format according to the IEEE-754 specification. Therefore, an "unsigned float"
+would be a compile-time error. floats also have their own suffix which is ‘f’ or ‘F’. For example:
+
+\begin{cblk}
+float fpl = 57.998779f;
+\end{cblk}
+
+The suffix for float is the only \textit{non-optional} suffix. If you omit the suffix for float, it will be
+promoted to a double, which will occupy twice the space.
+
+\subsection{Double}
+
+doubles are also considered to be floating-point integers, however, double stands for "double precision" since
+there are twice as many bits in a double as there are in a float, (and therefore double the precision). As I
+mentioned, floating-point integers cannot be unsigned, and that still applies to doubles. doubles are 64-bits.
+Unlike float, double does not have any suffix to denote that it is a double. Akin to int, double is assumed if
+no suffix is given, even if using the keyword "float". Not much more is to be said here... There is some debate
+as to whether double is better than float. In my humble opinion, float is sufficient, and for programs which
+utilize a lot of maths, will end up saving you a lot of program space.
+
+\subsection{Long Double}
+
+The final primitive type that we’ll be discussing is the long double. long doubles can vary in length, but on
+a 64-bit machine, they are typically a whopping 128 bits (16 bytes!). long doubles share the same suffix as
+long, being ‘l’ or ‘L’. Once again, only signed is allowed. On a final note, I don’t recommend using long
+double unless absolutely necessary. It may not seem like it but allocating 16 bytes a few times can really add
+up, especially on systems with only a few MB of memory if you’re on an embedded system.
+
+\section{Creating Aliases With typedef}
+
+If you are familiar with C, it may seem an odd choice to jump straight into typedefs, but I think it will be
+important to explain them now in order to help us understand what’s happening later on. A typedef is simply an
+alias for an existing data type. "typedef" is a keyword in C, which we can use to help make our code shorter or
+easier to read. For example, take the following line:
+
+\begin{cblk}
+typedef unsigned long long int ull_t;
+\end{cblk}
+
+Note that the last item in the sequence is the typedef name/alias for the type preceding it. In this example,
+ull\_t is a typedef (alias) for "unsigned long long int". Typedefs are never strictly necessary, but you will
+innevitably come across them as you use other people's libraries or APIs. A typedef can be declared almost
+anywhere in your program. Conventionally, typedefs will end with the suffix "\_t", though this is a matter of
+preference.
+
+\section{Useful Typedefs}
+
+I think it would be very beneficial to go over some pre-existing typedefs since these will come up a good
+amount throughout the duration of this document, as well as the duration of your C coding career. I will go
+over these typedefs the same way that I went over the variables beforehand, albeit in less detail. Keep in
+mind that these are just aliases.
+
+\subsection{bool (stdbool.h)}
+
+bool is short for boolean. Note that there is no built-in data type for booleans in C. bool was added in C99
+under stdbool.h (we haven’t gotten to header files yet, so don’t worry if you don’t know what I’m talking
+about). bool is actually not a typedef (hehe), it is technically a macro, but I've lumped it in here because it
+functions the same as a typedef. Although booleans only require 1 bit, C does not have any built-in types that
+are that small, thus bool occupies one byte. stdbool.h also adds definitions for true and false. true is
+equivalent to 0x01 and false is equivalent to 0x00. Using bool is a good option when you are dealing with lots
+of boolean logic and want to make your code more legible, or when you want to return true or false from a
+function rather than using a \textit{sentinel} value such as 1 or 0.
+
+\subsection{Platform Agnostic Types (stdint.h)}
+
+There are a few typedefs which allow you to create integer type variables with the exact number of bits
+requested, independent of platform. The stdint.h header file consists of the typedefs uint8\_t, uint16\_t,
+uint32\_t, and uint64\_t, as well as their signed int variants. The ‘u’ in uint stands for unsigned int, as you
+may have guessed. As I mentioned, the very nice thing about these typedefs is that they guarantee the number
+of bits that you specify on any platform. So, for example, uint16\_t will always allocate 16 bits, no matter
+what architecture. There also exists a pointer type for allocating the correct amount of memory to store
+pointer addresses since this will differ on 32-bit vs 64-bit machines. For example, intptr\_t and uintptr\_t
+will allocate the proper amount of memory for a pointer to an int or unsigned int, respectively.
+
+\subsection{size\_t and ssize\_t (stddef.h and sys/types.h)}
+
+size\_t and ssize\_t are very commonly used typedefs. The number of bits that it occupies will always be equal
+to the architecture size. For example, on 32-bit hardware, (s)size\_t would 32 bits, but on a 64-bit machine,
+(s)size\_t would be 64 bits. size\_t is the unsigned variant, whereas ssize\_t is the signed variant (the first
+‘s’ stands for signed). The reason people like this typedef is primarily readability. If you’re storing the
+number of bytes something occupies, or perhaps the number of items an array can hold, (s)size\_t is more
+legible than using something like int. What’s perhaps a bit confusing is the header files that these typedefs
+are defined in. size\_t is defined in stddef.h, but since ssize\_t is for some reason defined in sys/types.h.
+sys/types.h happens to include stddef.h, and stdio.h happens to include sys/types.h, so in order to access both
+of these, we just have to include stdio.h.
+
+\subsection{wchar\_t (stddef.h)}
+
+wchar\_t, which stands for "wide character" is an alternative to char. wchar\_t will have a size in bytes
+large enough to accomodate the biggest character set within the set of supported locales. Naturally, the
+standard printf() function was never designed for unicode, so there’s a bit more work that needs to be done
+in order to print unicode characters to the screen. First, we need to set a locale via setlocale(), defined in
+locale.h. This function accepts a category and a locale. The category specifies what will be affected, and the
+locale specifies the character encoding that will be used. We also need to use the wprintf() function defined
+in wchar.h rather than printf(). The code looks something like the following:
+
+\begin{cblk}
+#include <wchar.h>
+#include <locale.h>
+
+int main(void) {
+    wchar_t emoji = 0x0001F600;
+
+    setlocale(LC_CTYPE, "");
+    wprintf(L"%lc\n", emoji);
+
+    return 0;
+}
+\end{cblk}
+
+LC\_CTYPE specifies that we want to set the locale only for regular expressions, character classification,
+character conversion functions, and wide-character functions. The empty string indicates that we want to
+receive a locale that makes sense according to our environment. In my case, it will likely resort to using
+en\_US.UTF-8. Then we simply print the wchar using wprintf(). Note the ‘L’ prefix on the string literal. This
+indicates that each character in the string literal should be treated as a wchar\_t.
+
+\section{Quick Note on Man Pages}
+
+As a piece of useful advice, you can search for header files within the Linux man pages to get more information
+regarding function or typedef declarations. For example, to find out more information about bool, you can
+execute the command "man stdbool.h" in your terminal, which will provide you with a list of functions and
+typedefs that the stdbool.h header file defines. For headers which exist within a directory e.g.
+<sys/something.h> you can usually replace the '/' with an underscore e.g. "man sys\_something.h". Sometimes C
+APIs share a name with the Linux command. For example, stat is a command, whilst simultaneously being a C
+function. In order to search for the C reference, do "man 3 stat". The man command has 8 separate categories
+that it divides information into, so explicitly selecting the number 3 will get you the C reference, whereas 1
+is reserved for shell commands. If you’d like to know more about man section, see my Linux document or read
+the man page for the man command!
+
+\section{Pre-processor Directives}
+
+I will now spend a long time talking about preprocessor directives, which will probably confuse you,
+but that’s okay. We haven’t delved deep into how the compiler works at this point, and I’d like to keep it
+that way for now, but there is one thing that I must quickly explain in layman’s terms. The compiler has
+several  stages in its pipeline, and the first of those stages is known as pre-processing. Pre-processing
+happens before the actual compilation of the program. In essence, the pre-processor will parse the file for
+special statements called pre-processor directives. Pre-processor directives start with the hash symbol ‘\#’
+(the correct name for the hash or pound symbol is an octothorp)! These lines will be processed as commands
+prior to all other lines in the source file. Unlike regular code statements, you should not end pre-processor
+directives with a semi-colon unless you know what you’re doing. Here are a few common pre-processor directives:
+
+\begin{itemize}
+    \item{\textbf{\#define:} Substitutes a pre-processor macro.}
+
+    \item{\textbf{\#undef:} Undefines a pre-processor macro.}
+
+    \item{\textbf{\#if:} An conditional statement ran during the pre-processing phase.}
+
+    \item{\textbf{\#elif:} Equivallent to an else-if statement, but ran during the pre-processing phase.}
+
+    \item{\textbf{\#else:} Equivallent to an else statement, but ran during the pre-processing phase.}
+
+    \item{\textbf{\#endif:} Terminates a conditional \#if block.}
+
+    \item{\textbf{\#ifdef:} Short form for \#if defined(x).}
+
+    \item{\textbf{\#ifndef:} Short form for \#if !defined(x).}
+
+    \item{\textbf{\#error:} Prints an error message to stderr during the pre-processing phase.}
+
+    \item{\textbf{\#pragma:} Issues special commands to the compiler during the pre-processing phase.}
+\end{itemize}
+
+Using these directives appropriately is an art that is difficult to master. Let’s begin by going through them
+sequentially. I will be grouping some directives together such as \#if, \#elif, and \#else, for example.
+
+\subsection{\#define}
+
+Aside from \#include, \#define is the directive that you will see used most and will be most beneficial to you.
+\#define will create what’s known as a macro, which is sort of like a label that expands to whatever text you
+provide afterwards. Macros don’t take up any physical address space in RAM because they are not actually
+variables that get initialized anywhere. The \#define directive takes in two "parameters": the name of the
+macro, and the macro’s assigned value. For example, we might be interfacing with a device where the I/O has been
+memory-mapped to a specific address in RAM. In order to read/write to/from this port, we can define the base
+address like so:
+
+\begin{cblk}
+#define PORTA 0x2000
+\end{cblk}
+
+In this case, whenever C comes across the macro PORTA, it is substituted with the literal text "0x2000".
+\#define can be dangerous because we can do things that are not permitted/defined within the C specification.
+For example, we can define our own opening and closing curly braces (please don't do this)!!!
+
+\begin{cblk}
+#define OPEN_BRACE {
+#define CLOSE_BRACE }
+
+if (true) OPEN_BRACE
+// Do something
+CLOSE_BRACE
+\end{cblk}
+
+Notice that the standard for macros is to make them capitalized. While it is not required to capitalize
+macros, it is still heavily encouraged for the purposes of readability and avoiding namespace clashing.
+
+\subsection{\#include}
+
+\#include is the most commonly used preprocessor directive, since it is required within nearly every source
+file that you write. Again, we haven't discussed header files yet, but let's just say that they are essentially
+files which contain definitions about certain variables and functions. The \#include directive is used to
+include these files into our code. \#include takes one "argument", which is the .h file that we are including.
+There are two options for how we include them. One is to use angle brackets (<>) and the other is to use
+parentheses (""). Angle brackets indicate that the header file can be found in a location on the host system
+that belongs to the compiler's lookup path. On linux, the linker first searches the \$LD\_LIBRARY\_PATH
+environment variable, followed by the \$PATH variable (see the man page for ld to get a more accurate list of
+directories that the linker searches). Angle brackets are typically used for header files that are already
+installed on your system due to being commonly used by other programs (e.g., header files that belong to the C
+runtime library). The parentheses indicate that you'd like to manually enter the path. This path can be a full
+path starting from your root directory, otherwise, the program will assume a relative path starting from the
+directory of the .c file in which \#include was used. For example:
+
+\begin{cblk}
+// Common header file that belongs to libc. Probably exists under /usr/shared/lib
+#include <stdio.h>
+// Relative path. Header file likely belongs to your project
+#include "../../header.h"
+\end{cblk}
+
+One final note about the \#include directive is that this does not "import" code in the same manner as a
+language like Java. The contents of header files that are included with \#include get substituted in-place
+i.e., at the location of the \#include directive. In other words, \#include essentially copies all the code in
+the header file and pastes it into the source file. Considering that \#include is a preprocessor directive,
+this means that no semantic analysis takes place when the file is inserted. In other words, C will not
+complain if we include any file that exists on the system until we actually try to compile. Due to the fact that
+the \#include is effectively a glorified paste command, it is actually possible to \#include C source files,
+which is a valid strategy that we'll look into later. We will certainly review this pre-processor directive more
+once we get to header files, but hopefully you now have a general idea of how it works.
+
+\subsection{\#undef}
+
+The \#undef pre-processor directive, as you may have guessed, undefines a macro that was previously defined.
+The use cases for \#undef are a bit niche, but there are certainly appropriate times to use it. The danger
+with \#undef is that it allows us to re-define macros, which can be dangerous if not used with caution. Here's
+an example of what you generally should not do:
+
+\begin{cblk}
+// I do not condone the following code
+#define SOME_FLAG 0
+#undef SOME_FLAG
+...
+#define SOME_FLAG 1
+\end{cblk}
+
+If you genuinely intend to undefine the macro, and don't plan on redefining it again, then \#undef is
+perfectly fine to use. And perhaps, if you are very cautious, I would even go as far as to say that it's okay
+to \#define, \#undef, and \#define again, so long as the second \#define sets the macro back to its original
+value. In general, if you find yourself reaching for this pre-processor directive, ask yourself whether there
+might be a better way of handling the issue before hastly slapping \#undef everywhere.
+
+\subsection{\#ifdef and \#ifndef}
+
+\#ifdef and \#ifndef are really nice pre-processor directives because they allow us to check whether a macro has
+been defined or not. In conjunction with \#define and \#undef, this can become very useful. This is commonly
+used to branch into specific portions of code depending upon the user's OS, or based on certain build options.
+We will be going over something called include guards, which use these directives, as well as a few other
+pre-processor idioms after I'm finished explaining all the directives. The only thing that you should know for
+now is that \#ifdef returns true if the macro provided is defined, and \#ifndef returns true if the macro
+provided is \textit{not} defined.
+
+\subsection{\#if, \#elif, \#else, \#endif}
+
+These 4 directives are equivalent to if, else if, and else. No matter how many \#ifs or \#elifs are used, an
+\#if directive must always close with \#endif. Once again, this is useful for blocking and controlling certain
+segments of code. We will also be going over examples in a bit.
+
+\subsection{\#error}
+
+The moment that \#error is reached, the program is aborted, and the error message supplied after abort is
+printed to stderr. This is probably a good time to talk about how we can have multi-line pre-processor
+directives. Since newline characters normally signify the end of a preprocessor directive, we must use the
+backslash '\' to indicate that we want to continue the next line. For example:
+
+\begin{cblk}
+#error This is a very long error message\
+    that i am printing to stderr
+\end{cblk}
+
+Note that the backslash allows us to continue the preprocessor directive onto the next line. This can aid with
+readability if you have a very long argument. Something very important to note is that adding an additional
+space after the backslash will cause the newline to remain, which can lead to code that is extremely hard to
+debug! For this reason, I recommend that you have your text editor remove trailing whitespace. Most editors
+have a setting to enable this feature, or if you are using something like [Neo]Vim, there are autocommands
+which can remove trailing whitespace on write.
+
+\subsection{\#pragma}
+
+\#pragma might just have to be a whole guide on its own, but it's okay because it's not great to rely on it in
+the first place. \#pragma actually has a bunch of subcommands called "pragma directives" that do extra work
+within the pre-processor. Pre-processor directives are not always enough to do everything that we want, so
+pragma directives can grant additional control. The reason I say that it's not great to rely on it is because
+the sub-directives that are available to you is heavily dependent upon the compiler that you are using.
+Generally, the only time I use the \#pragma directive is for suppressing compiler warnings that I don't care
+to see. The three major C compilers are GCC (GNU foundation), Clang (LLVM), and MSVC (Microsoft).
+
+\section{Pre-Defined Macros}
+
+Compilers which conform to modern language standards ought to implement some of the following pre-defined
+macros, which are available for use in your code. When the compiler defines a symbol internally, we call this
+a "compiler intrinsic". In fact, a lot of functions that you utilize in your code may be replaced by compiler
+intrinsic versions unless you explicitly state that you don't want the compiler to do so.
+
+\begin{itemize}
+
+\item{%
+    \textbf{\_\_DATE\_\_}: Expands to the current date in the format MM DD YYYY.
+}
+
+\item{%
+    \textbf{\_\_TIME\_\_}: Expands to the current time in the format HH:MM:SS.
+}
+
+\item{%
+    \textbf{\_\_FILE\_\_}: Expands to the name of the file that encloses it.
+}
+
+\item{%
+    \textbf{\_\_LINE\_\_}: Expands to the line number that the macro was declared on.
+}
+
+\item{%
+    \textbf{\_\_STDC\_\_}: Defined as 1 when the compiler complies with the ANSI standard (C89/C90). Note that
+    the -ansi compiler flag fufills a similar role by enforcing the ANSI standard during compilation.
+}
+
+\item{%
+    \textbf{\_\_STDC\_VERSION\_\_}: Prints a timestamp in the format YYYY MM that describes the C standard that
+    the compiler is using.
+}
+
+\item{%
+    \textbf{\_\_STDC\_HOSTED\_\_}: Defined as 1 when the compiler's target is a hosted environment. A hosted
+    environment is an environment which implements the full libc standard.
+}
+
+\item{%
+    \textbf{\_\_cplusplus}: Similar to \_\_STDC\_VERSION\_\_, \_\_cplusplus also expands to a version string
+    in the same format. It is used to test if a header was compiled by a C compiler or a C++ compiler.
+}
+
+\item{%
+    \textbf{\_\_OBJC\_\_}: Defined as 1 when the Objective-C compiler is in use (Objective-C was, once upon a
+    time, used by Apple).
+}
+
+\item{%
+    \textbf{\_\_ASSEMBLER\_\_}: Defined as 1 when preprocessing assembly language.
+}
+
+\item{%
+    \textbf{\_\_VA\_ARGS\_\_ }: List of variadic arguments (will cover in more depth in a later section).
+}
+
+\end{itemize}
+
+I want to make mention of a few other non-official pre-defined macros, which I have found good use for, but
+which are more dependent upon what compiler you're using than the ones mentioned previously. I am referring
+primarily to \_\_FUNCTION\_\_, \_\_PRETTY\_FUNCTION\_\_, and \_\_func\_\_. These all print out the enclosing
+function's name, with the exception being \_\_PRETTY\_FUNCTION\_\_, which prints out additional information
+about the enclosing function alongside just its name. There is no real difference between \_\_FUNCTION\_\_ and
+\_\_func\_\_ other than the fact that the latter was released later to resolve version compatibility issues,
+making it the more portable option, and effectively making \_\_FUNCTION\_\_ obsolete.
+
+As we just seen, a lot of the pre-defined macros begin with two underscores. The common convension is that a
+single underscore is reserved for low level system variables and two underscores are reserved for compiler
+intrinsics/built-ins.
+
+\section{Pre-Processor Macro Functions}
+
+The \#define directive allows for passing in arguments to the macro label. The compiler does not perform type
+checking until compile time, since the preprocessor just inserts whatever you pass to the macro as arguments
+in the proper positions. Since macros are substituted prior to compilation, it is very common to see
+operations occur out of order. For example, take the following macro:
+
+\begin{cblk}
+#define SECOND_TO_MILLIS(s) s * 1000
+    timer_func(SECOND_TO_MILLIS(5 + 5)); // Trying to pass in 10,000 to timer_func()
+\end{cblk}
+
+While it seems like this should work (converting 10 seconds to 10,000 milliseconds), we actually end up with
+5005ms. This is because the macro is expanded before being compiled. The parameter 's' gets substituted as
+5 + 5, thus SECOND\_TO\_MILLIS is evaluated as 5 + 5 * 1000. Order of operations states that the
+multiplication should occur prior to the addition, so this evaluates to 5005.
+
+The common solution to this issue it to surround everything in brackets when you pass in parameters to a
+macro. The \#define for SECOND\_TO\_MILLIS should be re-written as follows:
+
+\begin{cblk}
+#define SECOND_TO_MILLIS(s) ((s) * 1000)
+\end{cblk}
+
+This would expand 's' as (5 + 5) so that the addition would occur before the multiplication (since brackets
+take precedence in order of operations).
+
+\section{Common Macro Idioms}
+
+Programmers really enjoy finding general-purpose recurring patterns that can be reused. You'll hear developers
+discuss the most "idiomatic" method of going about solving a problem. Typically, this refers to employing a
+pattern which is built-in to the language, or exists as a higher level concept. Macros have a couple of commonly
+used idioms that are useful for solving recurring issues. The following couple of sub-sections will cover a
+handful of the idioms that I'm most familiar with (pertaining specifically to macros).
+
+\subsection{Include Guard Idiom}
+
+Anytime that we use the \#include directive, the directive will copy and paste the contents of the provided
+header file into our source file (a.k.a. the .c file). If we have multiple .c files, it is probable that
+multiple of them will include the same header files. This causes compiler issues since the compiler will think
+that you've redefined the same symbols twice, when you did not intend to. In order to make sure that a header
+file only gets included once within the entire project, we often use the include guard idiom. The include
+guard is added within the header file and prevents the header from being included more than once. Here is what
+the include guard looks like:
+
+\begin{cblk}
+#ifndef FOO_H
+#define FOO_H
+
+// All of your variable/function declarations and whatnot
+...
+
+#endif // FOO_H
+\end{cblk}
+
+What's happening here is that the \#ifndef checks to see if FOO\_H is a macro that has previously been defined.
+If it has been defined, then \#ifndef returns false, and the entire include guard is skipped, otherwise, we
+\#define FOO\_H (we don't need to give it any value, it just needs to exist), then we insert all the code
+and/or definitions that would normally be added to our header file. Keep in mind that the entire header gets
+pasted where we \#include the header file, which would include our include guard. The next time that a .c file
+tries to \#include foo.h, the \#ifndef returns false since we \#define(d) FOO\_H previously, and therefore, we
+skip to the \#endif statement at the bottom of the file, and foo.h does not get included a second time.
+
+\subsection{Disabling a Region of Code}
+
+Rather than commenting out a region of code using a multi-line comment, we can easily disable a region of code
+by using the \#if and \#endif macros. It's as simple as doing the following:
+
+\begin{cblk}
+#if 0
+// Code to disable
+#endif
+\end{cblk}
+
+This simple trick can comment out code the same as a regular multi-line comment. The \#if 0 always evaluates
+to false, since 0 is evaluated as false in boolean expressions in C. You may want to do this to enable or
+disable a region of code. Whilst you could just use a multi-line comment, this is much quicker, and allows you
+to disable code which has comments in it (since commenting comments can sometimes be problematic).
+
+\subsection{Quick Debugging}
+
+It is not uncommon to inexperienced programmers outputting a million print statements that say something along
+the lines of "made it to line 5" or something to that effect. If you're truly too lazy to use an actual
+debugger, then there is a slightly better way to do this (although you should probably just learn how to use a
+proper debugger). We haven't covered printf() yet, but it is C's function for printing text to stdout.
+
+\begin{cblk}
+#define DEBUG_LOG printf("file: %s, function: %s, line: %d\n", \
+    __FILE__, __func__, __LINE__)
+
+void foo() {
+    // Some code
+    ...
+    DEBUG_LOG;
+}
+\end{cblk}
+
+Simply by adding the macro DEBUG\_LOG, we print out the function name and line number that we reached. Note
+that we have a semi-colon after DEBUG\_LOG. This is because out printf statement must end in a semi-colon.
+Since it's bad practice to put semi-colons in macros, we place it after the macro instead.
+
+\subsection{The do-while(0) Idiom}
+
+The do-while(0) idiom is sort of a confusing one because we must first understand the problem that it solves.
+Let's say that we want to have a macro that runs 2 or more functions in a row. You might consider writing
+something like the following:
+
+\begin{cblk}
+#define RUN_FUNCS(x) do_this((x)); \
+                     do_that((x))
+
+if (condition)
+    RUN_FUNCS(5);
+\end{cblk}
+
+The if condition would expand to:
+
+\begin{cblk}
+if (condition)
+    do_this(5);
+    do_that(5);
+\end{cblk}
+
+Assuming that you were trying to fit both functions into the if statement, this will not result in the desired
+behaviour. If no scope is provided with the curly braces in an if statement, only the line that comes directly
+after the if will be evaluated. In this case, do\_this(5) would be evaluated if the if condition was true, and
+then, since do\_that(5) is not considered to be inside the if statement, it will get ran in all cases. If the
+if condition is false, do\_this(5) fails to run, but do\_that(5) still runs.
+
+In order to have both function calls be within the if statement block, we can use the do-while(0) idiom. This
+looks like the following:
+
+\begin{cblk}
+#define RUN_FUNCS(x) do { \
+            do_this((x)); \
+            do_that((x)); \
+            } while (0)
+\end{cblk}
+
+Remember that 0 evaluates to false in boolean expression in C, so this do-while loop will only run once since
+while (0) will return false and exit the loop. However, because do\_this() and do\_that() are both enclosed
+within the do-while loop, the if statement will now include both functions.
+
+\begin{cblk}
+if (condition)
+    RUN_FUNCS(5);
+\end{cblk}
+
+Now the above expands to:
+
+\begin{cblk}
+if (condition)
+    do {
+        do_this(5);
+        to_that(5);
+    } while (0);
+\end{cblk}
+
+Which for all intents and purposes is identical to:
+
+\begin{cblk}
+if (condition) {
+    do_this(5);
+    do_that(5);
+}
+\end{cblk}
+
+Effectively, what we've established is that the do-while sheathes the code which is expanded within the macro
+with an enclosing scope.
+
+\section{Enums}
+
+Wasn’t quite sure where to put this section, but it sort of fits in with data types, typedefs, and macros, so
+I’ve decided to paste it here. If you’re not familiar with what enums are, don’t worry, they are quite simple.
+Understanding enums will make you a much better programmer, even if they might come across as pointless upon
+first glance. Essentially, enums are just a list of variable names that have some start value, and increment
+in value as the list grows. Here is what the declaration of an enum looks like:
+
+\begin{cblk}
+enum Errors {
+	BADBLOCK,
+	NOMEM,
+	CRASH,
+	UNKNOWN
+};
+\end{cblk}
+
+As you can see, I’ve created a list of variables which each have some name pertaining to an error that might
+arise in my code. Enums implicitly have a start value of 0, so BADBLOCK would be = 0, NOMEM would be = 1, and
+so forth. However, we can change that start value with the assignment operator like so:
+
+\begin{cblk}
+enum Errors {
+	BADBLOCK = 1,
+	NOMEM,
+	CRASH = 5,
+	UNKNOWN
+};
+\end{cblk}
+
+Now, BADBLOCK will be = 1, NOMEM will be = 2 (since enums are incremental), CRASH will be 5, and UNKNOWN will
+be 6. Enums must be of type int. You may think of enums as a list of correlated integer values. Enums are
+often used for setting flags or defining correlated states.
+
+Note that it is not uncommon to use enums for other purposes, such as defining a list of correlated
+characters. Since characters are numeric types in C, it is perfectly acceptable to use enums as aliases for
+character literals. For example, say that we want to define read, write, and execute modes. We could store
+those as an enum like so:
+
+\begin{cblk}
+enum Permissions {
+	READ = ‘r’,
+	WRITE = ‘w’,
+	EXEC = ‘x’
+};
+\end{cblk}
+
+The benefit of enums is primarily readability. An enum provides a nice block of categorized labels. It is also
+helpful when reading a function signature if the parameter is of type Permissions (for example), rather than
+just int. Another potential benefit is that smart editors will usually detect when you’ve failed to handle all
+labels for an enum within a switch statement, among other things.
+
+\section{Declaration vs. Definition and Implicit vs. Explicit}
+
+I would like to cover some terminology to aid you as I continue discussing the theory. The terms declaration
+and definition get thrown around a lot, and you may come to the false conclusion that these can be used
+interchangeably. The term declaration means that we declare the existence of something to the compiler. The
+same goes for functions in C. We first must declare a function’s prototype, and then define the contents of
+the function. Here are examples of declaring and defining a variable and a function:
+
+\begin{cblk}
+int a;               /* Variable declaration */
+int a = 10;          /* Variable definition */
+int func(int a);     /* Function declaration */
+int func(int a) {    /* Function definition */
+	a++;
+	return a;
+}
+\end{cblk}
+
+Another thing that will get thrown around a lot for the remainder of your programming career are the terms
+implicit and explicit. Implicit means that it is “not written in bold” i.e. it’s not entirely obvious.
+Explicit means that you have made your intentions abundantly clear. A common example of implicit and explicit
+come up when we are casting one type to another. Consider the following: double d = 65; Here we have provided
+the variable d (of type double) with an integer literal. It is implicit that 65 is converted to a double by
+the compiler. In other words, 65 becomes 65.0, and is stored according to IEEE-754 whether you realize it or
+not. In order to make this explicit, we would use the cast operator like so: double d = (double)65; In this
+case we’ve explicitly stated that 65 is being cast to a double. Either is fine, but explicit statements often
+help with legibility and display intent to the reader.
+
+\section{Functions}
+
+I think it’s now appropriate to talk about functions a little bit. Functions are declared/defined similarly to
+most procedural languages. They have a return type, a name, and an optional parameter list. These three things
+make up the function’s “signature”. In C, we are not able to override functions (technically speaking). A
+function “prototype” is synonymous with function “declaration”. As I mentioned, we must declare a function’s
+prototype before the function can be defined. Ignoring a function’s prototype can lead to undefined behaviour
+(and some very nasty bugs). This is the primary use for header files – they contain all of the function
+prototypes to avoid clutter in the source file. You do not have to put prototypes within a header file, but
+for larger code it becomes practical in order to maintain readability. Note that main() is a special function
+which the compiler expects to find once and only once. There are two prototypes of main that are defined by
+the POSIX standard:
+
+\begin{cblk}
+int main(void);
+int main(int argc, char *argv[]);
+\end{cblk}
+
+Note that argv is sometimes also written as char **argv (it makes no difference, so long as we can input an
+array of strings). Other variations of main are not POSIX compliant. For example, a common mistake for
+beginners is to define main as: int main() {} without the void keyword, however, this is technically
+incorrect, even though your program will still compile and execute. The second prototype of main is only
+useful if you want to take in command line arguments. argc (argument count) is the number of arguments, and
+argv (argument vector) is an array of strings. The first argc indexes of argv will contain each parameter
+passed to the program (separated via whitespace). For example, if I run an executable called runme with the
+command line arguments hello and world like so: ./runme hello world, then argc will be 3 (runme is considered
+to be the 0th argument) and argv will contain the strings “./test”, “hello”, and “world” in indexes 0, 1, and
+2 respectively.
+
+Now let’s say that you wanted to create a basic hello world program. We will create a function called
+say_hello(). The prototype for say_hello() will be declared in a header file called hello.h, and the
+definition for say_hello() will be defined in a source file called hello.c. Let’s look at how that might
+look:
+
+\begin{cblk}
+/* hello.h */
+#ifndef HELLO_H
+#define HELLO_H
+void say_hello(void);
+#endif
+
+/* hello.c */
+#include <stdio.h>
+#include “hello.h”
+
+void say_hello(void) {
+	printf(“Hello World!\n”);
+}
+
+int main(void) {
+	say_hello();
+	return 0;
+}
+\end{cblk}
+
+And now we’ve written our first hello world program! + an include guard to prevent the code from accidentally
+being included in more than one source files. We declared the function prototype for say_hello() which has a
+return type of void i.e. it returns nothing, and a parameter of type void i.e. it takes in nothing. In the .c
+file, we #include <stdio.h> and “hello.h” (we use double quotes assuming that hello.h and hello.c are placed
+in the same directory). Then we define say_hello(). We do this by giving it a scope with the curly braces
+rather than ending it with a semi-colon. We call a function called printf() which is included in stdio.h and
+finally, we add our main function which calls say_hello() and returns with an exit status of 0 (which
+indicates that the program completed without any errors).
+
+Note: If you ever have to look through a very old C codebase it is possible that you might stumble upon
+K&R-style declarations for functions. Prior to the ANSII reformed standard, people used to declare their
+functions something like this:
+
+\begin{cblk}
+void foo(a, b, c)
+    int a;
+    short b;
+    char *c;
+{
+    ...
+}
+\end{cblk}
+
+This style of declaration has since been deprecated, but I actually did run across this by chance during one
+of my first programming jobs and was not familiar with it, so in the rare case that you ever see something
+like above, you’ll now know why.
+
+\section{getopt(int argc, char *const argv[], const char *optstring)}
+
+The getopt() function is a very useful function for parsing command line options entered in the terminal. In
+order to use this function, you must #include <unistd.h>. It takes in three parameters. The first parameter
+is the number of arguments, and the second parameter is an array of strings. Sound familiar? These two
+arguments are meant to match the ones from main(int argc, char *argv[]). The third parameter is a string that
+you provide to specify what options should be available. This function can be really confusing when it comes
+to return values, but I’ll attempt to explain it. unistd.h defines certain global/external variables. These
+extern variables include char *optarg, which is a string, optopt, which is a char, and optind, an int.
+Depending on the return value of getopt(), these variables may or may not be set. Here is a list of possible
+return values for getopt():
+
+\begin{itemize}
+
+\item{%
+    Returns -1 if there are no more options to be parsed
+}
+
+\item{%
+    Returns ‘?’ if getopt() comes across and unrecognized option or if a value is not provided after an
+    option flag when one was expected. Unrecognized options are stored in optopt.
+}
+
+\item{%
+    If we provide a ‘:’ before the option in optstring, instead of returning ‘?’ when an expected value is
+    missing, getopt() returns ‘:’.
+}
+
+\end{itemize}
+
+I recommend that you read the official man pages on this function if you are still confused, as it is
+definitely the best resource for this particular function. Here is a brief example of how getopt() can be
+used:
+
+\begin{cblk}
+int main (int argc, char *argv[]) {
+   int opt;
+   /* Provide ‘:’ before each option that expects a value to proceed it */
+   while((opt = getopt(argc, argv, ":f:d:s")) != -1) {  /* f = file, d = destination, s = source */
+
+      switch (opt) {
+         case 'f':
+            printf("User provided file: %s\n", optarg);
+            break;
+         case 'd':
+            printf("User provided destination location: %s\n", optarg);
+            break;
+         case 's':
+            printf("User provided source location: %s\n", optarg);
+            break;
+         case '?':
+            printf("Unrecognized option: %c\n", optopt);
+            break;
+         case ':':
+            printf("Option expects a value to proceed it\n");
+            break;
+         default:
+            printf("Should not be possible to reach here\n");
+            break;
+      }
+   }
+ /* optind stores the index of the previously parsed argument and is useful
+     for collecting additional arguments that were not parsed by getopt() */
+   while (optind < argv) {
+	printf(“Extra arguments: %s\n”, argv[optind]);
+	optind++;
+}
+
+   return 0;
+}
+\end{cblk}
+
+\section{The Compilation Process}
+
+I feel that here, we reach a fork in the road when it comes to me trying to explain the way our code works.
+It is time that we understand the compilation process. Unfortunately, the compilation process is quite messy
+and difficult to understand, but we will have to trek across this swamp before we can continue walking on dry
+land. As you’ve learned, the compiler has at least two stages: the pre-processing stage and the actual
+compilation stage. Depending on who you ask though, you will get varying responses about how many stages of
+the compiler there really are. I like to say that there are really 5 stages in the compilation pipeline.
+These 5 stages go as follows: Pre-processing, compilation, assembly, linking, loading. The compiler does
+not typically do all of these things by itself. It may rely on other programs that only focus on one specific
+section of the pipeline. For example, on Unix, we had tools such as cc (the c compiler), as (the assembler),
+ar (the archiver), and ld (the linker/loader). This sequence of programs is typically referred to as the “C
+Compiler Toolchain” since each tool is used sequentially, one after the other (like links in a chain). I will
+try to explain each step of the compilation process, but first, let me explain some basic things.
+
+A .c file is often called a “source file” because it contains most of our source code. A header file
+(sometimes called an include file), or .h file, often contains declarations of certain functions or variables
+that we need to include in our source files (note that header files are still considered to contain source
+code, even if they aren’t called “source files”). A source file, along with all of the header files that it
+includes is called a “translation unit” or “compilation unit”. When a translation unit is compiled, it
+outputs an object file (.o). Additionally, you should know that we can create an archive (a folder) of .o
+files called a static library, which ends with the .a extension. On Windows, a static library would have the
+.lib extension. We can also create shared libraries called .so files on Linux (which are equivalent to .dll
+files on Windows). Finally, you should know what an executable file is. Executables can link with static
+libraries, and/or link with shared objects. An executable which contains only static libraries is called a
+static executable, and an executable that loads one or more shared objects at runtime is called a dynamic
+executable. With those terms out of the way, I’ll explain how the compilation pipeline works one step at a
+time:
+
+\section{Pre-Processor}
+
+The pre-processor phase happens before the compilation phase, as you know. The pre-processor primarily deals
+with pre-processor directives. That means substituting macros, expanding include files, and stripping comments.
+It is also in charge of dealing with pragma directives. The pre-processor takes in all source and header
+files to generate what we call pre-processing translation units (.i files). These pre-processing translation
+units get sent off to the next phase of the compilation pipeline, so we typically never see them.
+
+\section{Compilation}
+
+Confusingly, compilation is one of the steps within the compilation process. The compiler takes in all of the
+pre-processed translation units from the pre-processor which have now all had comments stripped, macros
+substituted, and includes expanded. The compiler has its own very long laundry list of phases within its own
+pipeline. To give a basic idea, this includes lexical analysis, syntax analysis, semantic analysis, code
+optimization, and code generation. Essentially, the compiler is in charge of taking in our input language (C)
+and compiling it to our target language (in our case, assembly). The compiler outputs what we call the
+“translated translation unit” (.s files) a.k.a. assembly language, and passes it to the assembler.
+
+\section{Assembler}
+
+The assembler is much like the compiler, only for assembly language. If you’ve ever worked with assembly, you
+would know that it needs to get assembled via an assembler, which breaks down the human readable assembly
+code into machine-readable code called “machine code”. Effectively, machine code is just binary. Technically,
+the assembler will actually convert the assembly code into object code (.o files), which is the same as
+machine code, but contains extra metadata in its header.
+
+\section{Linker}
+
+The linker is an important step in the compilation pipeline. There are two things that the linker does:
+static linking and dynamic linking. Static linking is concerned with the object files generated by the
+assembler. It will look for the definition of certain functions and variables and match them to their
+corresponding address locations. For example, if a function was defined within a.o, but is called in b.o, the
+linker must tell b.o that the function is defined in a.o. In other words, static linking resolves symbols and
+relocates code amongst the object files that were output by the assembler. I mentioned earlier that Linux has
+shared object files (.so). Shared object files are typically libraries (a collection of .o files) that are
+loaded into main memory for any program to access. For instance, almost all programs link the C runtime
+library. On Unix systems, the C runtime library is known as libc. In GNU/Linux, the C runtime library is
+technically known as glibc, since GNU rewrote libc from Unix (On Windows, the C runtime library might be
+called libcmt.lib, etc.). In other words, the C runtime library can have multiple implementations depending
+on the platform. Anyways, having libc be a shared object means that we can reduce executable sizes since we
+don’t need to add the contents of libc to our program. On top of that, if libc were to ever need a
+rewrite/update, it could do this without affecting your program. In my case, libc is located under
+/usr/lib/libc.so.6. If we run the file command on it (which outputs information about the type of file), we
+see that it is an ELF 64-bit shared object file and that it is dynamically linked. To summarize, the linker
+does both static, and dynamic linking, and is responsible for linking any included libraries as well. The
+linker will output an executable for us to be able to run.
+
+\section{Loader}
+
+It may be debated as to whether the loader is part of the compilation phase. Whether or not it is, I think
+it’s important that we learn about it, so I’m including it here. The loader is simply responsible for loading
+our executable code into memory. When you run ./exe the loader must create a new running process. Your
+process reserves a location in memory where the program stack (as well as certain system resources that must
+be accessible to the process) will reside. It will then create a jump instruction to your program so that it
+can begin execution. Processes are a very complex topic which I plan to cover in the future (likely in the
+Linux document) so look out for that. Now that we have an executable, we can run the program. Here are some
+interesting commands to try on the command line: strings, file, readelf, ldd, ltrace, strace. The strings
+command will print out all ASCII strings within the executable file. Most of the file is binary garbage that
+we can’t read, but strings will find metadata which may be useful. Note that the only purpose of strings is
+to show you the strings that exist within the file, nothing more. The file command, as we seen, tells you
+more information about the file you give it. Primarily it just tells you the type of file, but it may give
+you a varying degree of information depending on the file type. The readelf utility has a few different
+command line options which you can check out in the man pages. The -a option outputs all metadata. This
+utility is similar to objdump, but is specifically for ELF executables. It is most useful for showing us the
+debug symbols ie. the function and variable names. When we get to debugging, you’ll see that the debugger
+actually strips these symbols from the executable. The ldd command will tell you what libraries your
+executable depends on, simple as that. The strace utility shows a traceback of all the system calls that were
+made by your executable. Finally, ltrace will show a backtrace of all of the dynamic library calls made by
+your executable.
+
+\section{Objects}
+
+Cleanse your brain of the OOP conditioning which hath been instilled in you – C is NOT object-oriented; it is
+entirely procedural. When I say object, I am referring to anything volatile which includes functions,
+variables, parameters, etc. Primarily, we will be focusing on variables in this section. We can think about
+an object in 3 different ways: The storage duration of the object, the scope of the object, and the linkage
+of the object. I will describe all three of these in detail, and then we can go over some examples.
+
+\section{Storage Duration}
+
+The storage duration has to do with the object’s lifetime i.e. the period of time during which an object has
+a fixed address and retains the last value that was written to it. There are 4 types of storage duration:
+
+\begin{itemize}
+
+\item{%
+    \textbf{static:} Exists for the life of the program and its address never changes.
+}
+
+\item{%
+    \textbf{automatic:} Objects with a local scope, such as functions, register contents, or stack allocated
+    variables.
+}
+
+\item{%
+    \textbf{allocated:} Variables which are allocated in heap space using something like malloc(), calloc(),
+    realloc(), mmap(), brk(), srbk(), etc.
+}
+
+\item{%
+    \textbf{thread:} Exists for the duration of the local thread.
+}
+
+\end{itemize}
+
+We will mostly be ignoring the thread duration, so we just need to remember that static means that the
+variable lasts for the duration of the program, automatic means that it lasts for the duration of the
+enclosing scope, and allocated means that it lasts until we call free() (or the process terminates and the OS
+retrieves it).
+
+\section{Scope}
+
+The scope of an object refers to its “visibility” i.e. what the object is able to access and what other
+things are able to access the object. There are 4 scopes that we can attribute to an object:
+
+\begin{itemize}
+
+\item{%
+    \textbf{function:} The word function is quite misleading here. What we really mean in this context are
+    “labels” as in “goto” labels. If you’re not familiar with goto and/or goto labels, I recommend that you
+    do a quick search online, as we really don’t need to cover them in this document.
+}
+
+\item{%
+    \textbf{block:} A.K.A scope. A region of code between two curly braces { }.
+}
+
+\item{%
+    \textbf{file:} Anything within the enclosing file.
+}
+
+\item{%
+    \textbf{thread:} The thread that has ownership of the object.
+}
+
+\end{itemize}
+
+\section{Linkage}
+
+Linkage refers to where the object is being linked from/to. There are technically 3 kinds of linkage:
+
+\begin{itemize}
+
+\item{%
+    \textbf{internal:} Only for use within the file.
+}
+
+\item{%
+    \textbf{external:} May be accessed outside the file e.g. libraries or other object files.
+}
+
+\item{%
+    \textbf{none:} Concept of linkage doesn't make any sense in the context of the object.
+}
+
+\end{itemize}
+
+\section{Storage Classes}
+
+Remember how we just talked about storage duration? Well, C has some keywords known as “storage classes”
+which give our variables a specific storage duration. There are actually 5 storage classes, though most
+articles will tell you that there are only 4. Technically, there are only 4, but a fifth was added in C11,
+“thread_local”. I will cover all 5 here, but just be aware that thread_local is not very common. Also note
+that a variable may only be qualified by 1 storage class (which should be fairly self-explanatory, as they
+indicate to the compiler the location at which the variable ought to be stored).
+
+\begin{itemize}
+
+\item{%
+    \textbf{auto:} The auto keyword in C indicates that an object should have an automatic storage duration.
+    In other words, it should live for the duration of the enclosing scope. If a variable has block scope,
+    then it will be destroyed after the instruction pointer moves past the closing curly brace. auto does not
+    need to be declared explicitly in most cases. Any variable declared within block scope will be auto by
+    default. When a variable is declared auto, the compiler reserves the appropriate amount of space based on
+    the data type, but this will very likely be stale data that was left behind. We call this garbage data.
+    Until we actually initialize the variable with some value, the variable will contain a garbage value. For
+    this reason, it is imperative that you initialize automatic variables before they are accessed/read.
+}
+
+\item{%
+    \textbf{extern:} The extern keyword along with the next keyword confuse many people. In essence, extern
+    is a global value. Whilst the scope of extern is still within the file that the variable was declared in,
+    it is possible to access extern variables from other files. You may declare variables as extern within
+    source files, but it is best practice to declare them within header files. We will go over extern in more
+    detail eventually. extern variables must be re-declared in every source file that uses them.
+}
+
+\item{%
+    \textbf{static:} The other keyword that throws people off is static. The static storage class allows
+    variables to remain in existence for the duration of the program. Its linkage is only local to the
+    translation unit (source and header file pair). That means that anything that tries to access a static
+    variable outside of the translation unit that it was defined in will fail because it wont be visible to
+    the linker from within other translation units. This technically allows us to declare/define two functions
+    or variables with the same name (although that is not its intended use and will probably cause you much
+    trouble if you try it). static variables are initialized to 0, unlike auto and register keywords, which
+    are uninitialized, and therefore contain garbage. Another way of thinking about static in C is to think of
+    it as meaning private. The best way to think about the static qualifier is that it effectively makes your
+    variables and functions “private”. I tend to qualify most of my smaller helper functions with static
+    since I usually don’t want to expose them to the rest of the program.
+}
+
+\item{%
+    \textbf{register:} The register keyword is seldomly used, but we will cover it anyways. register will
+    make a suggestion to the compiler to put a variable within one of its registers (we have no control over
+    which register or even if it actually will get placed in a register). This is useful in the case that we
+    know that the variable is about to be used a lot. Be humble though, the compiler is way smarter than you,
+    and can optimize better than you, so in all likelihood, it will already have placed the highest priority
+    items in the CPU’s registers. register is barely ever used because the compiler will typically optimize
+    this for you anyways, so don’t worry about it too much. Just know that it exists, and perhaps you may
+    even stumble across it in some production code one day if you’re lucky ;) In terms of limitations of the
+    register keyword, note that variables which are declared within a global scope (i.e., outside main() or
+    any other block) is prohibited, as well as storing the address of a variable via the ‘&’ operator.
+}
+
+\item{%
+    \textbf{thread_local:} As of C11, the thread_local storage class was added. The main idea is that the
+    object will last for the lifetime of the thread. If a thread dies, then so do the variables within it –
+    simple as that!  The objects value is initialized when the thread is started and cleaned up when the
+    thread dies.
+}
+
+\end{itemize}
+
+\section{Storage Duration, Linkage, and Scope}
+
+We’re going to go over a bunch of variable/function declarations/definitions and determine each of their
+storage duration, linkage, and scope:
+
+\begin{center}
+    \begin{tabularx}{\textwidth}{
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X |}
+        \hline
+        Statement & Storage & Linkage & Scope \\
+        \hline
+        int a; & Static & External & File \\
+        \hline
+        static int b; & Static & Internal & File \\
+        \hline
+        extern int c; & Static & External & File \\
+        \hline
+        thread_local int d; & Thread & None & Thread \\
+        \hline
+    \end{tabularx}
+
+    \begin{tabularx}{\textwidth}{
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X |}
+        \hline
+        Statement & Storage & Linkage & Scope \\
+        \hline
+        void foo(int e) { & Automatic & None & Block \\
+        \hline
+        int f; & Automatic & None & Block \\
+        \hline
+        static int g; & Static & None & Block \\
+        \hline
+        extern int h; } & Static & External & Block \\
+        \hline
+    \end{tabularx}
+\end{center}
+
+Hopefully most of these are apparent to you. The first 4 of variables are declared outside of any block,
+meaning that they must all have file scope (other than thread which is unique). The second set of variables
+are declared within a block, so they have block scope. All the static variables have internal linkage, and
+all of the external variables have external linkage, otherwise the linkage is none. If you are wondering why
+the first int has external linkage, it is simply because that is the default for variables declared outside
+of a block, similar to how auto is the default for variables declared within functions. As for storage
+duration, this mainly depends on whether or not the variable was declared within a block. If it was declared
+within a block and has no special storage class, then it is auto, otherwise it will be static (with the
+exception of thread_local variables).
+
+\section{Type Qualifiers}
+
+I feel that now would be a good time to go over type qualifiers since they sort of tie in with storage
+classes. Type qualifiers are special keywords that we can put in front of a variable which will tell external
+sources to treat it in some special manner. There are three type qualifiers, and they don’t really have much
+in common with each other, other than the fact that they “force” external resources attempting to read or
+write to abide by certain principles. These three keywords are const, volatile, and restrict.
+
+\subsection{const}
+
+The const keyword is common in many programming languages. In Java, const is known as “final”. const stands
+for constant, meaning that the value of the variable should not be altered. While const is a very good
+safeguard, it is certainly not bullet proof. There are still ways to forcibly write a new value into a
+variable that is marked const. Often times, beginners get confused as to what the differences are between
+const variables and macros. The difference between macros and variables marked const is quite significant,
+and we need to be careful not to conflate the two. Firstly, macros are expanded during the pre-processor
+phase, while const values are evaluated at compile time. Secondly, macros do not have a data type, but const
+variables do. Thirdly, macros cannot be altered unless they are #endef(ined) and #defined(d) again. const
+variables on the other hand, can be forcibly altered using what we call pointers (which we will get into soon
+enough). When we get to arrays, you will note that their size is always either specified with a macro, or a
+numeric literal. This is because the compiler can trust that the macro will not change between compile time
+and runtime, but it cannot make the same guarantee for variables marked const, since a const variable could
+technically be altered prior to the initialization of the array. While it can be tedious to add const
+everywhere, it should be used judiciously for variables and parameters that ought not be altered.
+
+\subsection{volatile}
+
+The volatile keyword is quite interesting – albeit a bit niche. The compiler attempts to optimize variables
+under the assumption that the only thing which can alter their value are other resources which are handled by
+the main thread of execution. However, there are external resources (typically other threads) which can alter
+the state of a variable without the main thread’s knowledge. The volatile keyword tells the compiler not to
+make such optimizations on the variable. It says: “you must check the value of this variable each and every
+time that you read from it”. The main use for volatile is for multi-threaded programs, as I’ve already
+implied. If another thread alters the state of a variable, then we want to be reading that variable every
+time expecting a change. Outside of multi-threading, volatile is not heavily used, so don’t worry about it
+too much. A good example of volatile in case you were wondering, is when dealing with condvars. If you’re not
+familiar with what those are, worry not, as we will cover them later in the multi-threading section.
+
+\subsection{restrict}
+
+We haven’t discussed pointers yet, as I’ve already mentioned, but in short, a pointer is a variable that acts
+as a pipe/tunnel towards another variable’s data. By accessing the pointer, we can access the contents of the
+variable that it points to. restrict is given to a pointer and tells the compiler that the pointer is
+effectively the sole “owner” of the value that it points to. This means that no other pointers shall point to
+the same data. This is good in most circumstances, as we do not typically want multiple pointers pointing to
+the same data. The compiler will reduce certain optimization instructions in order to accomodate for the fact
+that there is a restrict pointer. Note that restrict is more of a promise made to the compiler rather than a
+strict enforcement. You can still accidentally mark a pointer as restricted but fail to adhere your own
+suggestion, which can actually then decrease performance, as the compiler will have to correct for your
+mistakes.
+
+\section{Memory}
+
+This will likely be another gigantic section where I ramble on about memory. Memory is sort of the essence of
+C, so it is important that we understand how it works. Over the years, there have been many, many
+optimizations to memory. I don’t plan on covering all of these, but I do plan on giving you a good
+fundamental understanding of some of the tricks used by modern PCs, because when it comes to pointers and
+memory manipulation, we need to be very comfortable with this stuff. We will begin with the CPU of all things
+and work our way to main memory.
+
+\subsection{Refresher on CPU Architecture}
+
+If it’s been a while since your Operating Systems course (or better yet, my Computer Hardware document), then
+allow this to be a bit of a refresher, as well as a potential area for learning new concepts. We will skip
+over microprocessors and just focus our attention on modern day processors. These days, nearly all CPUs have
+at least two physical cores. These physical cores are identical to each other – that is to say they are
+designed as twins (physically identical). Each core contains a set of registers (32 registers is typical for
+modern day CPUs). If your confused about what a register is, it is really just another form of memory located
+on the CPU. In fact, any hardware that is capable of storing data can technically be classified as memory,
+which includes hard/solid state drives as well (hence why we can use them as swap memory). Registers are
+designed to be very small (64 bits or 8 bytes on x86_64) i.e. they cannot contain a lot of data, but the
+benefit is that they are extremely close to the Arithmetic Logic Unit (ALU), Control Unit (CU), and Memory
+Unit (MU). This means lighting fast calculations and read/write times. A bit further away (physically) from
+the registers, are the CPU’s caches. A cache is also just memory. In modern processors, there are typically
+3 levels of cache: L1, L2, and L3. Usually, L3 is shared between 2 cores, but the layout really depends on
+the architecture of the processor. Caches are also designed to be small, and they actually become larger in
+terms of storage size as you get further (physically) from the ALU. L1 is the smallest, then L2, then L3.
+Although our program’s call stack always remains in Main Memory, away from the CPU, data which is accessed
+will often get copied to the CPU caches to increase speed. Data which is less frequently used will be demoted
+to lower and lower cache levels in order to leave room in the higher access speed caches for variables that
+are more frequently accessed. When the CPU searches an entire cache and does not find the data that it is
+looking for, we call this a “cache miss”. The L1, L2, and L3 caches are further broken down into sectors
+called cache lines, which are the smallest segment of data that can be mapped into a cache. Note that
+registers and caches are both local to the CPU, but main memory is not. One other detail to note is that some
+CPUs have a dedicated icache, which stands for instruction cache. L1, L2, and L3 are usually used exclusively
+for data (dcache), but the CPU might also have a separate cache for CPU instructions that will also populate
+with instructions which are executed frequently.
+
+\subsection{The MMU}
+
+The Memory Management Unit (MMU) serves two primary purposes. The first purpose is to act as a sort of
+bodyguard that guards data transactions between micro controllers/processors and tries to prevent accidental,
+or even malicious, memory manipulation. The other purpose is to map physical memory to a virtual address
+space. You may have heard that there exists both virtual and physical memory. Technically speaking, the
+correct term for virtual memory is Virtual Address Space (VAS) and the correct term for physical memory is
+Physical Address Space (PAS). Before MMUs existed, we only had PAS. This led to numerous issues. VAS, on the
+other hand, is purely conceptual – it does not reside anywhere physically. The MMU makes up an address space,
+let’s say 0x00000000 to 0xFFFFFFFF, which will be our VAS. The MMU then maps “pages” of VAS to PAS. Whereas
+PAS is raw (just a contiguous block of memory), VAS is segmented into sectors that are typically 4096 bytes
+in size (4KB) called pages. Each page has a base address which will be the first address of that respective
+page. This is useful for a few reasons. The first reason is that it is much easier for us to get contiguous
+memory in VAS. You see, back in the days where VAS did not exist, memory was “static”. We had to pre-allocate
+certain locations in memory for our program, variables, and I/O. This led to easy attacks because hackers
+would be able to know exactly where everything started and ended and could write or read from the correct
+locations to perform malicious attacks. The primary solution to this is called Address Space Layout
+Randomization (ASLR). ASLR scrambles our processes’ virtual addresses randomly, so that the pages are all
+scattered, and writing or reading from somewhere is more likely to result in a crash. The MMU also detects
+access violations. It does this by noting the virtual address spaces for each process and ensures that
+processes do not attempt to read/write to/from another processes virtual address space. One last note about
+the MMU is that it has a lookup table called the Translation Lookaside Buffer (TLB). This buffer, similar to
+cache in the CPU, stores the most recent address mappings. This is done for efficiency. If the TLB did not
+exist, each time that we tried to access a virtual address, the MMU would then have to do a linear search to
+find the corresponding physical address. The TLB stores recent mappings so that it need not go far to find
+the mapping.
+
+\subsection{Stack Memory}
+
+You’ve likely heard of something called the stack, or stack space. Certain embedded systems might not
+implement stacks at all, and program stacks are not even mentioned within the C specification. However, in
+most modern systems which are not embedded, it is probably safe to assume that each program executes within
+its own unique program stack. The MMU is in charge of figuring out approximately how much space the program
+will require, and then reserving space for it by mapping VAS to PAS. Stacks can be quite large depending on
+the program. The benefit of stacks is that they isolate a program to a specific address space. If the program
+attempts to read or write from a location outside of this stack space, the MMU will throw an error and
+terminate the program. This doubles a security feature. The stack is further segmented into parts called
+stack frames. Stack frames, for all intents and purposes are equivalent to sub-routines of the program. When
+a sub-routine call is made, a new stack frame is created, and we push the appropriate data onto that frame.
+The sorts of data include other function calls, saved registers, local variables, the frame pointer of the
+function being called, and arguments to the function. If you recall going over storage duration, you’ll
+hopefully remember that automatic variables are stored for the duration of their enclosing scope, which
+really comes down to the stack frame they belong to. Once the function ends, the stack frame is popped off
+the stack, effectively making that memory available once more. Because stack frames are local to the program
+stack, data can be accessed quickly between frames. The downside to stack frames is that they are volatile,
+since they are popped off i.e. destroyed.
+
+\subsection{Heap Memory}
+
+Sometimes we require a large chunk of memory. Unfortunately, the stack cannot provide us with much memory
+because the MMU only reserves so much prior to the program beginning its execution. This is where heap space
+comes into play. Heap space, also known as ‘the heap’, is a large memory pool located somewhere in RAM. The
+actual implementation of heap space depends on the system. On older systems, heap space might have been
+memory shared by all processes. On modern systems, a certain amount of RAM is reserved as heap space on a
+per-process basis next to stack space. We can request to reserve some of this memory with a few functions
+that we’ll look at later on. Unfortunately, since heap space is not local to our stack, it is slower to
+access, and is less ideal than making local allocations. Sometimes we have no option, however.
+
+\section{Pointers}
+
+The worst part about C for most programmers is that they must manage memory. And it’s a fair complaint,
+because it is certainly not second nature to us to have to consider where and how are variables are being
+stored. However, this downside to C is also one of its greatest assets. Being able to reserve, reallocate,
+and free memory on command is not something that many programming languages allow you to do. Having this sort
+of control can be very useful. Enter pointers! As we’ve already discussed, a pointer is a variable that
+contains an address to another variable. It is very important that you drill that into your brain early on. A
+pointer cannot contain a char literal, or an int literal, or a float literal, or any value other than a valid
+address in hexadecimal. None-the-less, pointers still have data types. The reason that pointers have data
+types is because pointers can only point to variables (or memory) which have the same data type as the
+pointer. For example, a char pointer can only point to char variables. It should not point to an int
+variable. This is a protective measure, but we will see that it is actually possible to have pointers that
+lack a data type meaning that they can point to any kind of variable.
+
+Before we continue with creating pointers, we must learn two new operators in C. The address operator (&) and
+the dereference operator (*). These operators are somewhat confusing to new C programmers because they both
+serve multiple purposes. The address operator can also be used as a logical AND, and the dereference operator
+can also be used as the multiplication operator. The way that C differentiates between them is based off the
+context in which you use them. Both the address operator and dereference operator must be placed in front of
+a variable e.g. &var, *ptr. In this case, &var will return the hexadecimal address in VAS of the variable var.
+The dereference operator only works on pointers. It means “give me the value being held by the variable that
+you’re pointing to”. This will make more sense when we get to examples. What makes the dereference operator
+even more confusing is that it takes on a different meaning when defining pointers. The way that we would
+declare/define a pointer is as follows: <data type> * <pointer name>; In the context of defining/declaring a
+pointer, the dereference operator just indicates to C that the following variable will be a pointer. It does
+not mean “dereference the pointer”. The dereference operator can be placed anywhere between the data type and
+the pointer name. All three of the following are valid:
+
+\begin{cblk}
+int* ptr;     // On the left
+int * ptr;    // In the middle
+int *ptr;     // On the right
+\end{cblk}
+
+Each of the above means “create an integer pointer called ptr. If anytime after the declaration of ptr we use
+the dereference operator *ptr, then it acts as we would expect, and dereferences the pointer ptr.
+
+\subsection{Examples of Creating Pointers}
+
+Let’s look at how we create a pointer and how we actually point to another variable:
+
+\begin{cblk}
+#include <stdio.h>
+
+int main(void) {
+
+	int num = 10;
+	int *ptr = &num;
+
+	printf(“Value of num: %d\n”, num);                  // 10
+	printf(“Address of num: %p\n”, &num);               // 0x7ffc2eb8bc9c
+	printf(“Value of ptr: %p\n”, ptr);                  // 0x7ffc2eb8bc9c
+	printf(“Address of ptr: %p\n”, &ptr);               // 0x7ffc2eb8bca0
+	printf(“Value that ptr points to: %d\n”, *ptr);     // 10
+
+	return 0;
+}
+\end{cblk}
+
+In this program I create an int called num and give it the value 10. Then I create an int pointer called ptr.
+Note that I use the address operator to return the address of num. Since num and ptr are both of type int,
+ptr is allowed to hold the address of num. Now let’s dissect the print statements. In the first print
+statement, I pass in num as an argument. This will obviously just print num’s value which is 10. In the
+second print statement, I give num as an argument once again, but this time I use the address operator in
+front of it to return num’s address. In my case, its address was 0x7ffc2eb8bc9c. Next, I want to print out
+the value that ptr contains. Since ptr contains the address of num, this prints out the same address that we
+had seen previously. Note though, that ptr has its own address in memory, since we need to be able to store
+it somewhere as well. Therefore, I print the address of ptr using &ptr. This is a different address than that
+of num, naturally. Finally, we use the dereference operator to dereference ptr. That will return the value
+associated with the address that ptr contains. ptr contains the address of num, so we return 10 since the
+value 10 is stored at the address 0x7ffc2eb8bc9c.
+
+\section{Pointers... Continued!}
+
+Pointers are an essential concept in C, so I would like to continue exploring them. First off, let’s discuss
+the size of a pointer. On modern 64-bit machines, a pointer will always be 8 bytes (on a 32-bit machine, a
+pointer is 4 bytes). This does not mean that the value being pointed to is 8 bytes (which is important to
+understand). For instance, char pointers are used to point to string literals. I may have a string literal or
+even a long double, which occupy more than 8 bytes. That is okay, because the pointer only points to the base
+address of the data, it doesn’t contain the data itself (remember – pointers ONLY store ADDRESSES)!
+
+\subsection{Pointer Arithmetic}
+
+In C, we can perform arithmetic on pointers. But what does it mean to add/subtract/divide/multiply an
+address? C has defined a special behaviour for performing arithmetic on pointers. If for example, you were to
+add 1 to a pointer e.g. ptr++; it would not, in fact, add the number 1 to the address. Instead, it would add
+1 * sizeof(data type). So, if ptr was an int, and int was defined as 4 bytes, ptr++ would add 0x4
+(hexadecimal 4). This effectively means that the pointer no longer points to the original int, because the
+address that ptr contains is now offset by 0x04. This is useful for arrays as we will see, since we can
+continuously get the next/previous item in the array by doing ptr++ or ptr--; Using multiplication and
+division are rarely used on pointers because you will likely end up with an address that is way outside the
+boundaries of the stack.
+
+\subsection{Double Pointers}
+
+In case the thought hasn’t crossed your mind yet – yes, we can create pointers to other pointers. This also
+tends to confuse people, but it’s really not that bad after a bit of practice. If we define a pointer as
+char *ptr1, then we can create what’s called a double pointer to point to ptr. This would be defined like so:
+char **ptr2 = &ptr1; Remember that ptr has its own address, so we can simply pass it to the double pointer
+using the address operator. Note the double dereference operator to denote that it’s a double pointer. The
+more asterisks, the more “layers” you add. When I’m explaining this to new C programmers, I like to tell them
+that this is akin to an onion, and every time you dereference the pointer, you peel off a layer, inching
+closer towards the value located at the core. In order to dereference ptr2 entirely, we would use the
+dereference operator twice like so: char c = **ptr2; The first dereference returns ptr1, and the second
+dereference returns whatever ptr1 was pointing to. In all likelihood, the highest level of pointer that
+you’ll ever see is a triple pointer, but even those are quite uncommon.
+
+\subsection{Void Pointers}
+
+Let’s talk about void pointers. Remember how I said that we could have pointers that point to any data type?
+This is achieved by using void pointers. A void pointer is created as follows: void *void_ptr = &data; void
+pointers are both useful and dangerous. They allow for versatility when passing in data since we can pass
+data of any data type to them, however, it is possible that we pass in one kind of data and interpret it
+later as a different type of data, which is usually not the desired effect. Void pointers should be treated
+as raw bytes that can be cast back to anything. For example, take the following code:
+
+\begin{cblk}
+#include <stdio.h>
+
+/* Function declaration (Don't need argument names) */
+double cast_to_double(void *);
+
+/* Function definition */
+double cast_to_double(void *arg) {
+   double *dp = (double *)arg;
+   return ( *dp );
+}
+
+int main(void) {
+
+   char c = '\0';
+   char *cp = &c;
+
+   double mystery = cast_to_double(cp);
+   printf("Mystery value is %f\n", mystery);
+
+   return 0;
+}
+\end{cblk}
+
+We shall run through this together. Program execution begins in main. We create a char called c which
+contains the special character ‘\0’. Technically ‘\0’ is not the same as the number 0, since ‘\0’ is escaped
+with ‘\’. I create a pointer to c called cp. Then we create a double called mystery and set it equal to the
+return value of the function cast_to_double, passing in cp as an argument. As an aside, you may have noticed
+that I added a comment on the declaration of the function cast_to_double() where I pointed out that in
+function declarations you don’t have to specify the parameter names if you don’t want, only the data types of
+each ordered parameter. In the actual definition you do need names however, and in most cases I recommend
+that you put the names in for both the declaration and definition (the only reason I didn’t in this case is
+because the declaration isn’t in its own header file as it normally would be). Anyways, the parameter arg is
+a void pointer, which means that we can pass in an address that points to any kind of data. We pass in the
+address being held by cp, which happens to be the address of c. An implicit cast occurs here where cp becomes
+a void pointer and gets stored in arg e.g. void *arg = (void*)cp; Within the function we create yet another
+pointer called dp which is set to the address held by arg (still &c). This is an explicit cast; whatever data
+associated with the address passed to dp is now treated as if it were a double. We return the value held by
+dp by dereferencing it and print it to the console (stdout). As it turns out, this program prints “Mystery
+value is 0.000000”. But what was the ‘\0’ that we actually passed to the function anyways? This brings us to
+the next topic.
+
+\section{NULL}
+
+As a new C programmer, it is very important to understand what NULL is, considering that it is used
+frequently throughout our code. There are many debates as to whether or not NULL is a good thing within the
+programming space in general, but all of those debates are moot when it comes to C, because NULL is a C
+staple; one which will never be replaced in the language. First, let’s discuss which header files define
+NULL. According to the C standard, NULL must be defined in locale.h, stddef.h, stdio.h, stdlib.h, string.h,
+time.h, and wchar.h. Essentially, inclusion of any of these header files gives us access to NULL. Note that
+NULL is capitalized, indicating that NULL is defined as a macro in C, which happens to be the case. The
+actual implementation of NULL can vary depending upon which version of the C standard library you’re using.
+In glibc, NULL is defined as (void *)0. In other words, it is a pointer to address 0x00000000 in memory. Of
+course, if you’re an experienced programmer, you may know that that is a virtual address, which does not
+necessarily correspond to the actual physical address 0x00000000. Just as (void *)0 is a valid literal that
+denotes NULL, we too can use the special character ‘\0’ or just the number 0 to represent NULL as well. But
+if strings are NULL terminated, and the number 0 is equivallent to NULL, how then are we able to have zeros
+within our strings, you may be asking yourself. If you had that thought, it’s because you failed to recall
+that the character literal ‘0’ is not actually the same as the number 0. The character ‘0’ in ASCII is
+decimal 48, whereas the character ‘\0’ is actually the number 0.
+
+It is considered a best practice to avoid declaring pointers without initializing them. This is because if we
+create a pointer (which will presumably have automatic storage duration) and don’t give it an initial value,
+then it will point to garbage which it will interpret as a hexadecimal address. To address this, we like to
+set pointers = NULL if we are not ready to point them to something yet. This has the additional benefit of
+allowing us to do error checking. One other thing to note is that if we set a pointer equal to the address of
+a variable that is within a block scope, and that scope exits (thus destroying the variable that was being
+referenced) then we now have what’s called a null pointer. This is perhaps a confusing name for it, since a
+null pointer is not actually a pointer that points to the NULL macro, but rather one that points to invalid
+memory (an address which does not belong to our process’ address space). Dereferencing a null pointer leads
+to undefined behaviour. In most cases you will receive a segmentation fault which will crash the execution
+environment (program), however, it could be the case that you’re on an embedded system with no MMU, in which
+case you might begin executing some random code elsewhere in memory (albeit very unlikely it wouldn’t crash).
+I will show you an example of accidentally creating a null pointer, and how we can error check it.
+
+\begin{cblk}
+#include <stdio.h>
+
+/* Function declaration */
+void test_null_ptr(void *);
+
+/* Function definition */
+void create_null_ptr(void *arg) {
+   char c = 'a';
+   arg = &c;
+} /* Local variable c goes out of block scope */
+
+int main(void) {
+    /*
+        Good practice to initialize ptr with NULL
+        if we are not initializing it right away
+    */
+    char *nullptr;
+    create_null_ptr(nullptr);
+    printf("Value pointed to by nullptr is: %c\n", *nullptr);
+
+    return 0;
+}
+\end{cblk}
+
+The above example has no error checking, and therefore the program may crash when we try to dereference
+nullptr in the printf statement. In C, 0 means false, and anything that is not 0 means true (including
+negative numbers). Therefore, we could tell our program to only dereference nullptr if nullptr != NULL. We
+can simplify this expression to just if (nullptr) meaning, if nullptr is anything but NULL, we are allowed to
+continue. Note that this will only work if we set nullptr = NULL when we declare it, which we are not doing
+in the above example. Here is how we could do error handling for the above example then:
+
+\begin{cblk}
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Function declaration */
+void test_null_ptr(void *);
+
+/* Function definition */
+void create_null_ptr(void *arg) {
+   char c = 'a';
+   arg = &c;
+} /* Local variable c goes out of block scope */
+
+int main(void) {
+   /* Good practice to initialize ptr with NULL
+      if we are not setting it right away */
+   char *nullptr = NULL;
+   create_null_ptr(nullptr);
+
+   if (nullptr) {
+      printf("Address contained in nullptr is: %p\n", nullptr);
+   } else {
+        printf("nullptr does not point to an address\n");
+        exit(EXIT_FAILURE);
+    }
+
+   printf("Value pointed to by nullptr is: %c\n", *nullptr);
+   return 0;
+}
+\end{cblk}
+
+Since we set nullptr = NULL, our if condition fails and we go to the second “else” branch. We can also
+perform the same error checking using assert() (we will review assert() again in a bit). The assert()
+function takes in some conditional statement and if it evaluates to false the program terminates with an
+predefined error statement to stderr. Note that we must #include <assert.h> to use this function. This would
+look like the following:
+
+\begin{cblk}
+assert(nullptr);
+printf("Value of nullptr is: %c\n", *nullptr);
+
+/* Prints the following: */
+test: test.c:21: main: Assertion `nullptr' failed.
+Aborted
+\end{cblk}
+
+\section{Creating const Pointers}
+
+We’ve already covered the const keyword for regular variables, however, there is another use-case for const
+when it comes to pointers. Not only can we apply the const keyword to the pointer variable, but also to the
+value being pointed to by the pointer. I will show you an example, followed by the output of the compiler,
+and then we will review:
+
+\begin{cblk}
+int main(void) {
+
+   long lng = 999999999;
+   long * const pLng1 = &lng;
+   long const * pLng2 = &lng;
+   long const * const pLng3 = &lng;
+
+   pLng1++;	/* Incrementing pointer pLng1 */
+   (*pLng1)++;	/* Incrementing variable lng */
+
+   pLng2++;
+   (*pLng2)++;
+
+   pLng3++;
+   (*pLng3)++;
+
+   return 0;
+}
+
+/* Output of the compiler */
+test.c:10:12: error: increment of read-only variable ‘pLng1’
+   10 |         pLng1++;
+      |            ^~
+test.c:14:15: error: increment of read-only location ‘*pLng2’
+   14 |         (*pLng2)++;
+      |               ^~
+test.c:16:12: error: increment of read-only variable ‘pLng3’
+   16 |         pLng3++;
+      |            ^~
+test.c:17:15: error: increment of read-only location ‘*(const long int *)pLng3’
+\end{cblk}
+
+In this example, I create 3 pointers pLng1, pLng2, and pLng3 which all point to lng (note that under normal
+circumstances, you should not have multiple pointers to the same variable). You’ll notice that depending on
+where we place the keyword const determines what is and isn’t considered constant. pLng1 is defined as long *
+const pLng; In this case, const applies to the pointer itself (pLng1) so the compiler throws an error when we
+try performing pointer arithmetic on it, but it does not complain when we increment lng once dereferenced.
+pLng2 is defined as long const * pLng2; In this case, the opposite occurs. The compiler is okay with pLng2
+being mutated (in this case, incremented), but not with us trying to increment lng, since it is what is
+declared const in this case. In the third case with pLng3, the compiler is not okay with the pointer being
+incremented, nor with lng being incremented via the pointer.
+
+This syntax can appear quite confusing for new C programmers, but it is actually not too bad once you
+understand that what matters is which side of the kleane star (*) that the const keyword lies. If const lies
+to the left of it, it applies to the pointer. Likewise, if const lies to the right of the kleane star, it
+applies to the memory which is accessed when dereferenced. With this in mind, we can recognize that the
+following two statements are identical:
+
+\begin{cblk}
+const void* ptr;
+void const *ptr;
+\end{cblk}
+
+section{Function Pointers}
+
+That is correct, pointers do in fact get scarier! But frankly, function pointers are just regular pointers
+that point to functions. This is possible because function names are literally just labels that represent
+addresses (exactly the same as variable names) - addresses to regions of executable code. The typical
+use-case for functions is to create a function table i.e. an array of functions, and then have one function
+pointer which can point to one function in the function table at a time, and change what function it’s
+pointing to based on some branching logic. Another common use of function pointers is when creating threads,
+as each thread can take in a function pointer as a parameter so that that thread can operate on that specific
+function (more on that in the multi-threading section). The syntax for function pointers is a bit off-putting,
+but it’s not that bad after a bit of getting used to. The data type of the pointer should match the return
+type of the function. Therefore, if the function returns void, the pointer will be of type void as well. The
+pointer must also take in a list of comma-separated data types which are meant to align with the data types
+of the parameters in the function being pointed to. For example, a function with the following signature:
+long foo(int a, char b); could be pointed to with a function pointer akin to: long (*pFoo)(int, char) =
+&foo;  Is this sort of confusing? Yes... But it also makes sense if you squint at it for a while. There are
+two ways to call a function via a function pointer. The first, and more complicated way, is to dereference
+the function pointer like so: (*pFoo)(0, ‘w’); This makes it clear to the programmer that this is a function
+pointer call, however, I find this to be a bit confusing, personally. The easier way is to simply call it as
+if it were a regular function, e.g. pFoo(5, ‘g’); Ex.
+
+\begin{cblk}
+int foo(int, char);
+int foo(int a, char b) {
+   return (a + b);
+}
+
+int main (int argc, char *argv[]) {
+
+   int (*pFoo) (int, char) = &foo;
+
+   /* First method of calling */
+   printf("Sum of 0 and w is %d\n", (*pFoo) (0, 'w'));
+
+   /* Second method of calling */
+   printf("Sum of 5 and g is %d\n", pFoo(5, 'g'));
+
+   return 0;
+}
+\end{cblk}
+
+Although we haven’t really gone over arrays yet, the following should make enough sense to you, assuming that
+you have some knowledge of how arrays work. It is crucial to make note that function pointer arrays/tables
+only work if all the functions in the table share the same signature. Assuming that we have a few functions
+that all share the same signature, we create the function table by creating a normal function pointer. The
+only difference this time is that by adding the square brackets, we are indicating that we are creating an
+array of function pointers. We can then initialize this array with something called an initializer list,
+which will be covered in the array section. Here is an example taken from Geeks for Geeks:
+
+\begin{cblk}
+#include <stdio.h>
+
+/* Function prototypes */
+void add(int, int);
+void subtract(int, int);
+void multiply(int, int);
+
+void add(int a, int b) {
+    printf("Addition is %d\n", a+b);
+}
+void subtract(int a, int b) {
+    printf("Subtraction is %d\n", a-b);
+}
+void multiply(int a, int b)  {
+    printf("Multiplication is %d\n", a*b);
+}
+
+int main(void)
+{
+    /* fun_ptr_arr is an array of function pointers */
+    void (*fun_ptr_arr[]) (int, int) = { add, subtract, multiply };
+    unsigned int a, b, c;
+    a = 15;
+    b = 10;
+
+    printf("Enter Choice: add [0], subtract [1], multiply [2]\n");
+    c = (int)(getchar() - ‘0’); /* Subtract character ‘0’ (48 in decimal) to get numeric value of input */
+    fflush(stdin); /* Flush the newline char left by getchar() */
+
+    if (c > 2) {
+	printf(“Invalid input. Exiting...”);
+	exit(EXIT_FAILURE);
+    }
+
+    (*fun_ptr_arr[c])(a, b);
+
+    return 0;
+}
+\end{cblk}
+
+Function pointers get much, much more confusing :( Let’s say that we want to pass a function pointer as the
+argument for another function. Here is an example of how we can do that:
+
+\begin{cblk}
+int foo(int (*bar)(int, int));
+\end{cblk}
+
+In the example above, we declare a function called foo(). It contains a named parameter, bar. The named
+parameter bar is a function pointer that returns an int and accepts 2 ints as its parameters. Assuming that
+made sense, I’ll confuse you even more. Instead of accepting a function pointer as an argument to another
+function, let’s say that you want to return a function pointer from another function. I’ll just show you the
+syntax and try my best to explain:
+
+\begin{cblk}
+int (*foo(void))(int, int);
+\end{cblk}
+
+Okay, what’s happening here? Well foo is the name of the function that will return the function pointer.
+Unlike in the previous example where we have a named parameter, we don’t provide a name for the function
+pointer that we are returning, hence why you don’t see bar referenced anywhere. The return type is indicated
+by everything surrounding the declaration of foo(). So the initial int indicates the return type of the
+function pointer, and the two ints enclosed in brackets at the end are the argument list for the function
+pointer. It is often advised that you use a typedef in either of these cases. Here is an example (see if you
+can follow along):
+
+\begin{cblk}
+#include <stdio.h>
+
+typedef int (*add_t)(int, int); /* Create a typedef called add_t */
+
+int add(int a, int b) { /* A normal function which returns the sum of a and b */
+   return a + b;
+}
+
+add_t retFuncPtr(void) { /* This returns the address of add() as an add_t type */
+   return &add;
+}
+
+int acceptFuncPtr(add_t fptr, int a, int b) { /* This accepts an add_t and two numbers */
+   return (*fptr)(a, b); /* Return the result of the function pointed to by fptr */
+}
+
+int main(void) {
+   int a = 2;
+   int b = 3;
+   int result = acceptFuncPtr(retFuncPtr(), a, b);
+   printf("Result of %d + %d = %d\n", a, b, result);
+}
+
+/* Output: Result of 2 + 3 = 5 */
+\end{cblk}
+
+In case you were curious, here is the same code without the typedef:
+
+\begin{cblk}
+#include <stdio.h>
+
+int add(int a, int b) {
+   return a + b;
+}
+
+int (*retFuncPtr(void))(int, int) {
+   return &add;
+}
+
+int acceptFuncPtr(int (*fptr)(int, int), int a, int b) {
+   return (*fptr)(a, b);
+}
+
+int main(void) {
+   int a = 2;
+   int b = 3;
+   int result = acceptFuncPtr(retFuncPtr(), a, b);
+   printf("Result of %d + %d = %d\n", a, b, result);
+}
+\end{cblk}
+
+Because I’m feeling super sadistic and want to make you C noobs cry, I’ll show you a double function pointer
+just for fun ;) It’s actually not too bad, we just add an additional star to the function pointer like so:
+
+\begin{cblk}
+int add(int a, int b) {
+	return a + b;
+}
+
+int acceptDblFuncPtr(int (**fptr)(int, int), int a, int b) {
+	return (**fptr)(a, b);
+}
+
+int main(void) {
+	int (*add_ptr)(int, int) = &add;
+	int result = acceptDblFuncPtr(&add_ptr, 2, 3);
+	printf(“Result of %d + %d = %d\n”, a, b, result);
+}
+\end{cblk}
+
+Recall that with a normal function pointer, we can either invoke it by just calling the name e.g. fptr(2, 3);
+or by explicitly dereferencing it e.g. (*fptr)(2, 3);. With double function pointers, the former syntax
+(invoking it by name alone) no longer works. However, we can now optionally dereference it once or twice and
+it will work the same. In other words, we can invoke a double function pointer like this: (*fptr)(2, 3); or
+like this (**fptr)(2, 3);, but not like fptr(2, 3);. This rule applies for triple function pointers and
+beyond. What can I say, C is weird sometimes!
+
+\section{Operator Precedence}
+
+I’m sure that you’re already aware of operator precedence, but I wanted to talk specifically about the
+dereference operator. In the example above, we did something like (*lp1)++; These brackets were necessary
+because postfix operators have precedence over unary operators. In other words, if we had just done *lp1++;
+it would have been parsed as *(lp1++); which would add 0x8 to the address contained in lp1 and then
+dereference the contents of that address. In the  two unary operators, the compiler reads them left to right.
+For example, *++lp1 is read as *(++lp1) and ++*lp1 is read as ++(*lp1).
+
+\section{Returning Persistent Data Using Pointers}
+
+Something that really tripped me up a lot as a beginner and even intermediate C programmer was the marriage
+between pointers and functions. How ought you return persistent data from a function? We know that we require
+pointers since local variables are only local to their enclosing scope, but aren’t pointers also local to
+their enclosing scope as well? Yes! (they are). This is why we have two and only two methods of returning
+persistent data from a function. Remembering these will spare you much confusion.
+
+\begin{enumerate}
+
+\item{Don’t return anything}
+
+\item{Return a reference to heap-allocated memory}
+
+\end{enumerate}
+
+Let’s look at each of these. The first method – “Don’t return anything”? How does this make sense? Well you
+are already aware that pointers can be passed into functions as parameters. Modifying a local parameter which
+is a pointer will write to the same shared location in memory that is being referenced by the variable outside
+of the function (the argument that we “passed in” i.e. created a duplicate reference to). This means that the
+data will persist. The benefit of this is that it allows us to return something other than the pointer e.g.
+an error value, and therefore, we can kill 2 birds with 1 stone.
+
+Method 2 is to return heap-allocated memory. I emphasize this because we can absolutely never return a
+pointer to a stack-allocated variable that belongs in the same scope as the pointer. It may seem as though
+the memory could not persist using this method since the pointer will get destroyed once the stack pointer
+exits the function’s scope, however, the return value is what is key here. Since we return the address to the
+location of the memory in the program’s heap (which is persistent for the duration of the program), we can
+create a new reference/pointer to point to the returned value. Here is an example of each method:
+
+\begin{cblk}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int *foo();
+void bar(void *data);
+
+int *foo()
+{
+   int *data = malloc(sizeof(int));
+   *data = 12345;
+   return data;
+}
+
+void bar(void *data)
+{
+   strcat(data, "bar");
+}
+
+int main(void)
+{
+   char str[100] = "Modified by: ";
+   int *num_p = NULL;
+
+   bar((void *)str);
+   num_p = foo();
+
+   printf("str = %s\n", str);
+   printf("num_p = %d\n", *num_p);
+   free(num_p); /* Note that num_p must be freed because it was heap allocated */
+
+   return 0;
+}
+\end{cblk}
+
+\section{Other Pointer Tips}
+
+Here are some general tips when using pointers to keep in mind:
+
+\begin{enumerate}
+
+\item{%
+    Try to reduce the number of pointers that reference the same memory location. This is not a dogmatic
+    recommendation, but reducing the number of things that can modify the same data leads to code cleanliness
+    and reduces the risk of data redundancy (useless duplicates).
+}
+
+\item{%
+    Passing pointers is preferable for large data. This primarily applies to structs and arrays. Even if we
+    do not require the changes to a struct or array to be persistent, it still may be beneficial to pass the
+    data by reference rather than by value. This is because the size of a pointer is always 8 bytes, whereas
+    a struct or array might be much larger. Copy operations are expensive, and so passing a struct that is 64
+    bytes in size to a function will be slower than passing the address of the struct.
+}
+
+\end{enumerate}
+
+\section{C89 vs C99 Features}
+
+We briefly covered the major version releases of C, but it will be very useful to take a more in-depth look
+at some of the differences between versions. It is generally agreed upon that the major releases of C are as
+follows: C89/90 a.k.a ANSI C, C99, C11, C17, and C23. For me personally, I choose to use C99 as my standard
+of choice. Keeping the standard early allows code to be a bit more portable, since not all machines will have
+versions of gcc or clang that can compile the newer standards. There are good reasons for choosing C99 instead
+of ANSI C, despite ANSI C being the most portable standard of them all, which we will look at now. Note that
+sometimes we refer to the ANSI C way of doing things as “K&R” style, which stands for Kenneth and Richie.
+
+\subsection{Comments}
+
+In ANSI C, the only valid notation for writing comments is a multi-line comment (/**/). In this style, we
+must begin the comment with /*, to mark the beginning of the comment, and then we must close the comment with
+*/. C99 still allows for this style of comment, and it is in fact the only way to do a proper multi-line
+comment. However, C99 added the ability to do single line comments using the double slash //. This style of
+comment is much more common in modern programming languages, and is generally the preferred by most
+programmers.
+
+\subsection{Function Signatures}
+
+Probably the best reason for avoiding ANSI C is its approach to writing function signatures. ANSI C has a
+hideous syntax, which is to declare variable names in the parameter list, and then declare the types between
+the parameter list and the scope block of the function. In C99, a function signature looks like the following:
+
+\begin{cblk}
+int foo(char a) {
+    ...
+}
+But in K&R style, we’d write it like so:
+int foo(a)
+char a;
+{
+     ...
+}
+\end{cblk}
+
+This is also where the C++ style of braces started, where instead of having the opening brace on the same
+line as the function signature, you move it onto a separate line.
+
+\subsection{Variable Declarations}
+
+In ANSI C, variables must be declared at the top of the scope block. We cannot intertwine assignments with
+other statements. In C99, this is not the case, and we can declare variables wherever we so please. Most
+notably, this irks a lot of programmers when writing for loops. In ANSI C, you’d need to declare your
+increment variable before the loop begins, and then assign the initial value in the for loop, whereas in C99,
+this is reduced to one statement within the for loop. For example, in ANSI C:
+
+\begin{cblk}
+int i;
+for (i = 0; i < 5; ++i)
+\end{cblk}
+
+And in C99+:
+
+\begin{cblk}
+for (int i = 0; i < 5; ++i)
+\end{cblk}
+
+\subsection{Designated Initializers}
+
+One of my favorite features which was introduced in C99 is the ability to utilize designated initializers
+when declaring structs. Imagine that you have a struct with multiple fields that you don’t care about
+initializing right away, but you want to use an initializer list. In ANSI C – too bad, you must initialize
+every member of the struct in an initializer list. In C99, we can use designated initializers to target the
+specific member that you want to intialize. Imagine a scenario where we have the following struct:
+
+\begin{cblk}
+typedef struct {
+    int monitors;
+    int processors;
+    const char *gfx_card;
+} Computer_t;
+\end{cblk}
+
+Now let’s say we only want to initialize the gfx_card field. In ANSI C, we have to do the following:
+
+\begin{cblk}
+Computer_t my_pc = { 0, 0, strdup(“1080 Ti”) };
+\end{cblk}
+
+But in C99, we can do the following:
+
+\begin{cblk}
+Computer_t my_pc = { .gfx_card = strdup(“1080 Ti”) };
+\end{cblk}
+
+\section{Typecasting}
+
+It is important that you understand typecasting, as it comes up very frequently in many codebases. As I
+alluded to in the section on implicit vs. explicit, type casting is an explicit way of translating a
+variable’s data type to another type. The C compiler does this implicitly for us if we pass in an int to a
+function that expects a long for example. If the compiler is configured to give us warnings, it will often
+notify us whenever we have implicit type casts because they often come across as unintentional. Explicit type
+casts help with readability because they show the programmer that yes, you did, in fact, mean to turn that
+long into an int. In order to typecast, we simply put the type that we want to cast to in parentheses e.g.
+(int), followed by the variable that we’re type-casting e.g. (int) a_long; This doesn’t actually alter the
+type of a_long. Under the hood, the C compiler is allocating space on the stack for a new int variable and
+then assigning the contents of a_long to it. This would like like: int tmp = a_long;
+
+Now what if we cast a type with 16 bits such as a short to a type with less bits such as a char. In C, this
+will truncate the higher significant bits. So, for example, if our short is set to AA BB in hexadecimal, then
+casting it to a char will mean that it gets truncated to 00 BB. Now technically, I just lied, because if you
+typecast short to char like this: (char)a_short; then you will actually end up with FF BB. This is because
+char is signed by default. We can fix this by either typecasting to unsigned char e.g.
+(unsigned char)a_short; or by using something like uint8_t. Here is a small code snippet to demonstrate:
+
+\begin{cblk}
+#include <stdio.h>
+#include <stdint.h>
+
+int main(void)
+{
+   short shrt = 0xAABB;
+   printf("0x%hX\n", (uint8_t)shrt);
+
+   return 0;
+}
+\end{cblk}
+
+The code here is pretty self explanatory, except for maybe the weird printf statement. All that’s happening
+there is that we print “0x” followed by the format specifier h (which means short) and then X (which means
+print this in hexadecimal notation). The output is 0xBB (which is really 0x00BB).
+
+Casting a pointer to a pointer of another type will effectively alter how the data being pointed to is
+interpreted. For this reason, C is not considered typesafe. It is undefined behavior within the C
+specification to cast a data type to a pointer of a different data type with the exception of void *. For
+example, I may want to cast a variable or literal into an int pointer, or a char pointer. We can accomplish
+this like so: (char *)a_char; This effectively does the same thing as a regular cast, but creates a temporary
+char pointer to store the address of a_char. The compiler would do something like: char *tmp = &a_char; You
+must be cautious because the temporary pointer’s lifetime is only that of the current line being executed. To
+preserve this temporary variable, either assign it to another char pointer, or pass it as an argument to a
+function. For example: char *cp = (char *)a_char; The compiler effectively does this:
+
+\begin{cblk}
+char *tmp = &a_char;
+\end{cblk}
+
+...followed by this:
+
+\begin{cblk}
+char *cp = tmp;
+\end{cblk}
+
+One final trick that I wanted to show, just because I thought it was cool the first time I seen it, is that
+we can cast initializer lists into arrays (we will cover initializer lists shortly). This is useful when
+passing values to a function that accepts an array as one of its parameters. For example, given a function
+prototype like the following: void foo(const int bar[]); we can pass in data like so: foo( (const int[])
+({1, 2, 3}) ); Here, we the compiler is essentially doing const int tmp[3] = {1, 2, 3}; You may appreciate
+this more as you learn of the struggle that are arrays in C.
+
+\section{Derived Types}
+
+Derived types are low level structures or concepts that are built into C but rely on basic data types to be
+implemented. These primarily include arrays, strings, structures/structs, and unions. We will look at each of
+these derived types and how they function.
+
+\subsection{Arrays}
+
+Arrays should hopefully be a familiar concept to you. They have a fixed size and create key-pair mappings
+between the indices of the array and the data that we are storing a.k.a. the elements of the array. You must
+specify the data type of the array since all of the data stored within any given array must be of the same
+data type. We also throw around the word “contiguous” a lot in C when discussing arrays. It is essential that
+each index of the array is located next to its neighboring index in memory, thus we say that an array
+reserves a contiguous chunk/block of memory. You may have been taught in school to think about arrays as a
+rectangle made up of individual blocks that each represent the indexes of the array. In reality, arrays are
+not segmented as if we have divisors between each element but are instead just a long sequence of bytes
+separated by the size of the data type of the array (well in even more detail, the data may be segmented in
+physical memory, but be mapped contiguously in virtual memory by the MMU). For example, an array such as the
+following: int arr[5] = {1, 2, 3, 4, 5}; might look like this in memory:
+
+00000000 00000000 00000000 00000001 // 4 bytes reserved for 1
+00000000 00000000 00000000 00000010 // 4 bytes reserved for 2
+00000000 00000000 00000000 00000011 // 4 bytes reserved for 3
+00000000 00000000 00000000 00000100 // 4 bytes reserved for 4
+00000000 00000000 00000000 00000101 // 4 bytes reserved for 5
+
+The array (in this case called arr) is essentially used as an alias for the base address of the array. The
+base address of the array is actually just the address of its first element, since that’s where our region of
+contiguous memory begins. If we want to access some index of the array, it is as simple as adding an offset
+to that base address. That offset is calculated by taking the size of the data type of the array i.e.
+sizeof(int) in this case, and multiplying that with the index of the element that we want to access.
+Therefore, our formula for accessing a particular element in an array is B + si where B is the base address,
+s is the size of the data type of the array, and i is the index that we want to access. Let us say that we
+want to access the third element of the array in our example (which would be index 2). The base address of
+the array might be 0x7ffc3d81ddc0. In order to access the third element, we do 0x7ffc3d81ddc0 + sizeof(int)
+* 2
+
+= 0x7ffc3d81ddc0 + 0x4 * 2
+= 0x7ffc3d81ddc0 + 0x8
+= 0x7ffe40a5bef0
+
+Now perhaps that was all very confusing to you, but my point is mainly that when we use the index operator
+(for example, arr[2]), what C is doing behind the scenes is taking the base address of arr and adding
+sizeof(int) * 2 to it. Then it simply returns the data located at that address. So, there are no fancy
+separators between the data of an array. We just have one long contiguous chunk of memory that has a base
+address, and that we can calculate where elements are located by adding offsets to that base address according
+to the size of each element within the array.
+
+\end{document}

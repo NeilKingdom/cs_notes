@@ -1,0 +1,863 @@
+\documentclass{article}
+
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage[skip=11pt]{parskip}
+\usepackage[outputdir=/home/neil/.local/share/latex/output]{minted}
+
+\definecolor{bg}{RGB}{22,43,58}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue
+}
+
+\tcbuselibrary{listings, minted, skins}
+\tcbset{listing engine=minted}
+
+% C codeblocks
+\newtcblisting{clst}{%
+   listing only,
+   minted language=c,
+   minted style=monokai,
+   colback=bg,
+   enhanced,
+   frame hidden,
+   minted options={%
+      tabsize=4,
+      breaklines,
+      autogobble
+   }
+}
+
+\hypersetup{%
+   colorlinks=true,
+   linktoc=all,
+   linkcolor=gray,
+}
+
+\setmainfont{LiberationSans}
+\geometry{%
+  margin=1in
+}
+
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[R]{\thepage}
+\pagestyle{fancy}
+\fancypagestyle{plain}{\pagestyle{fancy}}
+
+\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+\renewcommand\maketitlehookd{\vfill\null}
+
+\title{The C Programming Language}
+\author{Neil Kingdom}
+
+\begin{document}
+
+\begin{titlingpage}
+
+\maketitle
+
+\end{titlingpage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Abstract}
+
+This document covers as much as I could humanly write about the C programming language. I’ve been programming
+for approximately 5 years or so, mostly in C, although I started writing this document way back when I first
+learned C, so please forgive for any misinformation that got overlooked. I try to update the document any time
+I discover something new about the language or discover that my presuppositions were wrong. I hope you get
+something out of reading this, as that is all I could hope for after putting many hours into it. Happy
+programming!
+
+\section{Introduction}
+
+The C programming language is primarily attributed to a programmer named Dennis Ritchie. Most programmers tend
+to associate C with operating systems – a) because it is a good language for interfacing with low level
+hardware, and b) because of the success of Unix/Linux, which were both written in C. The Unix operating system
+was created in the 1960s in Bell Laboratories (Bell Labs for short). Unix was originally written in assembly
+language, but in 1973 Unix was rewritten by Dennis Ritchie and Brian Kernighan. Another important figure who
+also worked at Bell Labs on Unix was Ken Thompson. Ken Thompson was the founder of the B language, which C
+was based off. In the 1980s, the POSIX standard was invented to help standardize Unix systems, as there were
+many companies who were making their own forks of Unix such as Sun Microsystems (later aquired by Oracle). As
+you probably know, Linus Torvalds eventually created the Linux kernel, which was heavily based off Unix and is
+still being maintained by Linus and the Linux community to this very day. C has had many releases over the
+years. The first release was called K\&R (Kernighan and Ritchie), based off the C Programming Language book
+that they co-authored. K\&R had very sloppy documentation, and only covered what Brian and Dennis felt was
+necessary to document. K\&R also permitted a lot of undefined behaviour which meant that writing certain code
+on one system might have completely different effects from another. It wasn’t until 1989 that we got ANSI C,
+also known as C89. The American National Standards Institute (ANSI) created a standard specification of C;
+something that programmers and compiler engineers could unanimously appeal to. ANSI C still wasn’t perfect,
+however. In 1990, the International Organization for Standardization (ISO - not to be confused with the file
+format) created another specification of C known as ISO/IEC 9899:1990, a.k.a. C90. C89 and C90 are essentially
+the same standard, which is why C90 is usually overlooked. In 1995, the ISO published an extension to C90
+which added some new features. This specification was called ISO/IEC 9899/AMD1:1995, or simply, C95. In 2000,
+ANSI adopted the ISO/IEC 9899:1999 standard aka C99. In 2011, another revision, informally known as C1X was
+created (a.k.a. C11). The newest release to date is C23, which again, adds a few keywords and features. The
+GNU project has their own variants for each of these standardizations to coincide with glibc (which I’ll cover
+later in this document).
+
+\section{Data Types}
+
+Where better to start than variables? Arguably the most basic yet essential units of code are variables. If
+you’re familiar with programming at all, you know that variables contain values and that the values they
+contain can assume various types, known as data types. Data types always have a specified size in memory.
+These sizes are defined within the language specification, but can sometimes vary depending on the platform
+architecture. In other words, the size of an int may vary from a 32-bit machine to a 64-bit machine.
+Unfortunately, this can get quite confusing. I will be covering each of the primitive data types individually.
+This might seem like a lot of stuff to remember, however, understanding the size of variables is very
+important when writing C code. We must be much more considerate of how much space we are occupying when
+writing code in C.
+
+\subsection{Void}
+
+The void type is what we call a “unit type”, which is a commonly recurring type found in other programming
+languages as well. It is both a valid type and an invalid type simultaneously. We cannot create a variable of
+type void, unless it is a pointer of type void*, which we will get to later. void is primarily used as the
+return type for functions. Essentially, it tells the compiler that the function returns nothing, which is why
+it makes sense for functions, but less so for variables (since a variable cannot store nothing). An empty
+return statement is valid for functions that return type void, but it is not required (this is typically only
+used for early returns). As an interesting but useless tidbit, void occupies a single byte of memory, even
+though it stores no data. This can be observed by printing sizeof(void).
+
+\subsection{Char}
+
+Char, short for character, is a \textit{numeric} data type. A char is \textit{always} stored as an integer
+which is usually translated to a glyph on the screen. You will often hear from folks on the internet that a
+char occupies 1 byte in C. This is not technically correct. A char in C is at \textit{minimum} 1 byte, and
+often occupies 1 byte since we typically use ASCII or UTF-8, but in UTF-16, a char is 2 bytes (16 bits = 2
+bytes). The actual size of char depends on the locale of your system – something that can be changed from
+within your C program (see my POSIX programming notes for more info on that). Assuming that a char is 1 byte
+in most cases, the range can either be -128 to 127 if signed, or 0 to 255 if unsigned. Valid character
+literals are considered to be any one character surrounded by single quotes e.g., 'z'. Not all valid character
+literals must be alpha-numeric. For instance, escape characters are also considered as valid character
+literals. An escape sequence is simply another way of representing a numeric value (normally represented in
+decimal, octal, or hexadecimal). Typically, characters which are represented as escape sequences have special
+meaning or functionality. For example, '\textbackslash{}n', '\textbackslash{}t', '\textbackslash{}b',
+'\textbackslash{}0', etc. are all special characters that may or may not be interpreted to have some special
+functionality (the C specification says nothing about special characters – it is the OS that defines and
+implements the behaviour for these characters).
+
+\subsection{Optional Reading (Advanced): Character Control Sequences}
+
+Pertaining to XTerm (the standard terminal emulator for X11), character literals become much more confusing.
+Technically, we are no longer talking about character literals, but rather, XTerm control sequences. The
+reason I’m discussing Xterm control sequences is because they closely resemble character literals, and can be
+stored as character literals, though they are not technically character literals. XTerm defines 4 types of
+control sequences:
+
+\begin{itemize}
+
+\item{%
+    \textbf{C}:  A single (required) character
+}
+
+\item{%
+    \textbf{Ps}: A single (usually optional) numeric parameter, composed of one or more digits
+}
+
+\item{%
+    \textbf{Pm}: Multiple numeric parameters, separated by semi-colon. Individual values for these parameters
+    are listed with Ps (see above)
+}
+
+\item{%
+    \textbf{Pt}: A text parameter composed of printable characters
+}
+
+\end{itemize}
+
+A standard known as ECMA-48 (aka ISO 6429) specifies two types of code. \textbf{C0} is a 7-bit code, and
+\textbf{C1} is an 8-bit code. \textbf{C0} and \textbf{C1} are both subsets of C. ECMA-48 does not refer to
+\textbf{C0} or \textbf{C1} as characters, since the term character is oft confused to mean "visible glyph".
+\textbf{C0} can be any decimal from 0 to 31 and also decimals 32 and 127, and \textbf{C1} can be any integer
+from 128 to 159. \textbf{C0} control bytes are used for all sorts of purposes such as text layout, transmission
+and device control, etc. \textbf{C1} control bytes are primarily used for displays and printers. \textbf{C1}
+is the set that is related to ANSI escape sequences and VT100 terminals, and thus, the set that we are most
+interested in. ECMA-48 processes a control sequence until the sequence is terminated by a terminating byte, or
+until it finds a byte which does not belong to the sequence. Here are some examples of \textbf{C1} control
+characters:
+
+\begin{center}
+    \begin{tabularx}{\textwidth}{
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X
+            | >{\centering\arraybackslash}X |}
+        \hline
+        Keyboard Sequence & ASCII Character & Hexadecimal & Semantic Meaning \\
+        \hline
+        ESC D & IND & 0x84 & Represents an index \\
+        \hline
+        ESC E & NEL & 0x85 & Represents the next line \\
+        \hline
+        ESC X & SOS & 0x98 & Represents the start of a string \\
+        \hline
+        ESC [ & CSI & 0x9D & Begins a control sequence \\
+        \hline
+    \end{tabularx}
+\end{center}
+
+These are basic control characters that are used by your terminal unbeknownst to you. The curses and ncurses
+libraries are the best examples for how these control sequences are used in a practical sense. By selecting
+control sequences that manipulate the terminal output, we can create TUI applications. Let’s look at a
+practical example by changing the foreground color of your terminal’s text output. By entering the command
+printf "\textbackslash{}033[91mThis is red text\textbackslash{}n\textbackslash{}033[0m" into your terminal,
+you will see it output "This is red text" in red. Let’s break down the control sequence that we just printed.
+The first character is an escape character, which tells the terminal that we are about to print a character
+literal. 0 in C indicates an octal number, so 033 is interpreted as octal 33. Looking at an ASCII chart, we
+see that octal 33 is the ESC (escape) character. As we seen earlier, ESC followed by [ is the \textbf{C1}
+control byte to begin a control sequence (also known as \textbf{CSI} (Control Sequence Introducer) in the ANSI
+control sequence atlas). If we do a bit more digging into the XTerm specification, we find that the control
+sequence CSI \textbf{Pm m} alters character attributes. Remember that \textbf{Pm} can be a list of multiple
+parameters separated by semi-colons, and that parameters are expressed as \textbf{Ps}. The \textbf{Ps} values
+for foreground and background color may differ depending on whether or not your terminal uses 16 colors.
+Anyhow, we see that when \textbf{Ps} = 9 followed by 1, it sets the foreground to Red! We also see that 0 sets
+it back to normal. Now, say we wanted to create blinking and underlined text with a white background and black
+foreground. All we have to do is find the correct \textbf{Ps} values within the specification. The resulting
+control sequence, which you can test on your terminal is "\textbackslash{}033[4;5;90;107mBlinking, Underlined,
+FG Black, BG White\textbackslash{}n\textbackslash{}033[0m". Do a printf of that on your terminal and be
+impressed. If you’re wondering how I got the \textbf{Ps} values for \textbf{Pm}, they can be found in XTerm’s
+documentation
+\href{https://invisible-island.net/xterm/ctlseqs/ctlseqs.html\#h3-Application-Program-Command-functions}{here}.
+Another resource which I found helpful can be found
+\href{https://www.aivosto.com/articles/control-characters.html}{here}.
+
+\subsection{Int}
+
+int, short for integer, is probably the most commonly used numeric data type in C. int is another data type
+that may vary in size depending on platform. Typically, it will be 2 bytes on 32-bit platforms, and 4 bytes on
+64-bit platforms. I will be assuming that you are on a 64-bit machine for the remainder of the document,
+meaning that I will treat ints as 32-bit, but be aware that this is generally not a good assumption to make,
+especially when writing code that is cross-platform. Without specifying the sign, int is implicitly set to be
+signed. Despite this, ints can be explicitly marked as unsigned. For an int that is signed, the range is
+-2,147,483,648 to 2,147,483,647 and for unsigned, the range is 0 to 4,294,967,295. Integer literals are
+commonly represented with prefixes or with suffixes.
+
+\begin{itemize}
+
+\item{%
+    \textbf{Prefixes}: Prefixes begin at the front of a literal
+    \begin{itemize}
+
+        \item{%
+            Binary literal (base 2): Begins with '0b' e.g. 0b00001111, 0b01010101. Please note that binary
+            literals are only supported by some compilers and are not generally portable.
+        }
+
+        \item{Octal literal (base 8): Begins with '0' e.g. 0777, 0123, 0655}
+
+        \item{Hex literal (base 16): Begins with '0x' e.g. 0xFFFF, 0xC0FFEE, 0x01}
+
+    \end{itemize}
+}
+
+\item{%
+    \textbf{Suffixes}: Suffixes are placed at the end of a literal. These are dependent on the integer type.
+    Since int is technically considered to be the default integer type, it does not have its own dedicated
+    suffix. However, we can still give it the ‘u’ or ‘U’ suffix to specify that it is an unsigned int. For
+    example: unsigned int i = 100u; Note that suffixes are mostly optional. Other than a few circumstances,
+    they generally only help to add clarity.
+}
+
+\end{itemize}
+
+\subsection{Short}
+
+short is short form for "short int" (say that 5 times fast). A short int is always 2 bytes i.e. 16 bits. Note
+that on 32-bit platforms, short is the same size as an int, which basically makes short useless on 32-bit
+machines. short can also be signed or unsigned. Again, like int, it is implicitly set to be signed if no sign
+is given. The range for signed short is -32,768 to 32,767 and for unsigned its 0 to 65,535. Short can either
+be written as just "short" or "short int". For example, the following lines are equivallent:
+
+\begin{clst}
+short shrt = 10000;
+short int shrt = 10000;
+\end{clst}
+
+Same as int, a suffix of ‘u’ or ‘U’ to specify that it is an unsigned short.
+
+\subsection{Long}
+
+long is short form for "long int". A long int can be 32-bits (4 bytes) or 64-bits (8 bytes), depending on
+platform. Same as short int, long can either be written as just "long" or as "long int". longs can be signed
+or unsigned. long is implicitly signed if no sign is given. For a signed 64-bit long, the range is
+-9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 and for unsigned, it is 0 to 18,446,744,073,709,551,615!
+long has its own dedicated suffix, which is ‘l’ or ‘L’. This can be used in conjunction with ‘u’ and ‘U’. For
+example, the following line is valid:
+
+\begin{clst}
+unsigned long l = 100000000ul;
+\end{clst}
+
+\subsection{Long Long}
+
+long long was primarily designed for 32-bit machines where a long was 32-bit. Since int was also 32-bit, long
+was pretty much useless. Thus, we were given long long, or long long int, which is always 8 bytes. The range
+will still be the same as what I specified in the previous section, since I was talking about 64-bit longs.
+long long also has its own suffix ‘ll’ or ‘LL’ which can also be used with ‘u’ or ‘U’. For example:
+
+\begin{clst}
+long long int bignum = -999999999999LL;
+\end{clst}
+
+\subsection{Float}
+
+We are now moving away from integer types, and entering decimal types, a.k.a. floating-point integers. While
+still numeric, floating-point types do not represent themselves the same way that normal binary integers do.
+Instead, they are represented by a format called IEEE-754 by the ISO standard. Note that IEEE-754 is not the
+only method of representing decimal types (IEEE-754 is known as floating point notation, but there also exists
+something called fixed point notation, which we will not be covering here, but that I recommend you look up).
+float is short for "single-precision floating point integer". This is a fancy way of saying that it’s a 32-bit
+decimal number. floats \textit{must} be signed because the Most Significant Bit (MSB) is dedicated for storing
+the sign within their binary format according to the IEEE-754 specification. Therefore, an "unsigned float"
+would be a compile-time error. floats also have their own suffix which is ‘f’ or ‘F’. For example:
+
+\begin{clst}
+float fpl = 57.998779f;
+\end{clst}
+
+The suffix for float is the only \textit{non-optional} suffix. If you omit the suffix for float, it will be
+promoted to a double, which will occupy twice the space.
+
+\subsection{Double}
+
+doubles are also considered to be floating-point integers, however, double stands for "double precision" since
+there are twice as many bits in a double as there are in a float, (and therefore double the precision). As I
+mentioned, floating-point integers cannot be unsigned, and that still applies to doubles. doubles are 64-bits.
+Unlike float, double does not have any suffix to denote that it is a double. Akin to int, double is assumed if
+no suffix is given, even if using the keyword "float". Not much more is to be said here... There is some debate
+as to whether double is better than float. In my humble opinion, float is sufficient, and for programs which
+utilize a lot of maths, will end up saving you a lot of program space.
+
+\subsection{Long Double}
+
+The final primitive type that we’ll be discussing is the long double. long doubles can vary in length, but on
+a 64-bit machine, they are typically a whopping 128 bits (16 bytes!). long doubles share the same suffix as
+long, being ‘l’ or ‘L’. Once again, only signed is allowed. On a final note, I don’t recommend using long
+double unless absolutely necessary. It may not seem like it but allocating 16 bytes a few times can really add
+up, especially on systems with only a few MB of memory if you’re on an embedded system.
+
+\section{Creating Aliases With typedef}
+
+If you are familiar with C, it may seem an odd choice to jump straight into typedefs, but I think it will be
+important to explain them now in order to help us understand what’s happening later on. A typedef is simply an
+alias for an existing data type. "typedef" is a keyword in C, which we can use to help make our code shorter or
+easier to read. For example, take the following line:
+
+\begin{clst}
+typedef unsigned long long int ull_t;
+\end{clst}
+
+Note that the last item in the sequence is the typedef name/alias for the type preceding it. In this example,
+ull\_t is a typedef (alias) for "unsigned long long int". Typedefs are never strictly necessary, but you will
+innevitably come across them as you use other people's libraries or APIs. A typedef can be declared almost
+anywhere in your program. Conventionally, typedefs will end with the suffix "\_t", though this is a matter of
+preference.
+
+\section{Useful Typedefs}
+
+I think it would be very beneficial to go over some pre-existing typedefs since these will come up a good
+amount throughout the duration of this document, as well as the duration of your C coding career. I will go
+over these typedefs the same way that I went over the variables beforehand, albeit in less detail. Keep in
+mind that these are just aliases.
+
+\subsection{bool (stdbool.h)}
+
+bool is short for boolean. Note that there is no built-in data type for booleans in C. bool was added in C99
+under stdbool.h (we haven’t gotten to header files yet, so don’t worry if you don’t know what I’m talking
+about). bool is actually not a typedef (hehe), it is technically a macro, but I've lumped it in here because it
+functions the same as a typedef. Although booleans only require 1 bit, C does not have any built-in types that
+are that small, thus bool occupies one byte. stdbool.h also adds definitions for true and false. true is
+equivalent to 0x01 and false is equivalent to 0x00. Using bool is a good option when you are dealing with lots
+of boolean logic and want to make your code more legible, or when you want to return true or false from a
+function rather than using a \textit{sentinel} value such as 1 or 0.
+
+\subsection{Platform Agnostic Types (stdint.h)}
+
+There are a few typedefs which allow you to create integer type variables with the exact number of bits
+requested, independent of platform. The stdint.h header file consists of the typedefs uint8\_t, uint16\_t,
+uint32\_t, and uint64\_t, as well as their signed int variants. The ‘u’ in uint stands for unsigned int, as you
+may have guessed. As I mentioned, the very nice thing about these typedefs is that they guarantee the number
+of bits that you specify on any platform. So, for example, uint16\_t will always allocate 16 bits, no matter
+what architecture. There also exists a pointer type for allocating the correct amount of memory to store
+pointer addresses since this will differ on 32-bit vs 64-bit machines. For example, intptr\_t and uintptr\_t
+will allocate the proper amount of memory for a pointer to an int or unsigned int, respectively.
+
+\subsection{size\_t and ssize\_t (stddef.h and sys/types.h)}
+
+size\_t and ssize\_t are very commonly used typedefs. The number of bits that it occupies will always be equal
+to the architecture size. For example, on 32-bit hardware, (s)size\_t would 32 bits, but on a 64-bit machine,
+(s)size\_t would be 64 bits. size\_t is the unsigned variant, whereas ssize\_t is the signed variant (the first
+‘s’ stands for signed). The reason people like this typedef is primarily readability. If you’re storing the
+number of bytes something occupies, or perhaps the number of items an array can hold, (s)size\_t is more
+legible than using something like int. What’s perhaps a bit confusing is the header files that these typedefs
+are defined in. size\_t is defined in stddef.h, but since ssize\_t is for some reason defined in sys/types.h.
+sys/types.h happens to include stddef.h, and stdio.h happens to include sys/types.h, so in order to access both
+of these, we just have to include stdio.h.
+
+\subsection{wchar\_t (stddef.h)}
+
+wchar\_t, which stands for "wide character" is an alternative to char. wchar\_t will have a size in bytes
+large enough to accomodate the biggest character set within the set of supported locales. Naturally, the
+standard printf() function was never designed for unicode, so there’s a bit more work that needs to be done
+in order to print unicode characters to the screen. First, we need to set a locale via setlocale(), defined in
+locale.h. This function accepts a category and a locale. The category specifies what will be affected, and the
+locale specifies the character encoding that will be used. We also need to use the wprintf() function defined
+in wchar.h rather than printf(). The code looks something like the following:
+
+\begin{clst}
+#include <wchar.h>
+#include <locale.h>
+
+int main(void) {
+    wchar_t emoji = 0x0001F600;
+
+    setlocale(LC_CTYPE, "");
+    wprintf(L"%lc\n", emoji);
+
+    return 0;
+}
+\end{clst}
+
+LC\_CTYPE specifies that we want to set the locale only for regular expressions, character classification,
+character conversion functions, and wide-character functions. The empty string indicates that we want to
+receive a locale that makes sense according to our environment. In my case, it will likely resort to using
+en\_US.UTF-8. Then we simply print the wchar using wprintf(). Note the ‘L’ prefix on the string literal. This
+indicates that each character in the string literal should be treated as a wchar\_t.
+
+\section{Quick Note on Man Pages}
+
+As a piece of useful advice, you can search for header files within the Linux man pages to get more information
+regarding function or typedef declarations. For example, to find out more information about bool, you can
+execute the command "man stdbool.h" in your terminal, which will provide you with a list of functions and
+typedefs that the stdbool.h header file defines. For headers which exist within a directory e.g.
+<sys/something.h> you can usually replace the '/' with an underscore e.g. "man sys\_something.h". Sometimes C
+APIs share a name with the Linux command. For example, stat is a command, whilst simultaneously being a C
+function. In order to search for the C reference, do "man 3 stat". The man command has 8 separate categories
+that it divides information into, so explicitly selecting the number 3 will get you the C reference, whereas 1
+is reserved for shell commands. If you’d like to know more about man section, see my Linux document or read
+the man page for the man command!
+
+\section{Pre-processor Directives}
+
+I will now spend a long time talking about preprocessor directives, which will probably confuse you,
+but that’s okay. We haven’t delved deep into how the compiler works at this point, and I’d like to keep it
+that way for now, but there is one thing that I must quickly explain in layman’s terms. The compiler has
+several  stages in its pipeline, and the first of those stages is known as pre-processing. Pre-processing
+happens before the actual compilation of the program. In essence, the pre-processor will parse the file for
+special statements called pre-processor directives. Pre-processor directives start with the hash symbol ‘\#’
+(the correct name for the hash or pound symbol is an octothorp)! These lines will be processed as commands
+prior to all other lines in the source file. Unlike regular code statements, you should not end pre-processor
+directives with a semi-colon unless you know what you’re doing. Here are a few common pre-processor directives:
+
+\begin{itemize}
+    \item{\textbf{\#define:} Substitutes a pre-processor macro.}
+
+    \item{\textbf{\#undef:} Undefines a pre-processor macro.}
+
+    \item{\textbf{\#if:} An conditional statement ran during the pre-processing phase.}
+
+    \item{\textbf{\#elif:} Equivallent to an else-if statement, but ran during the pre-processing phase.}
+
+    \item{\textbf{\#else:} Equivallent to an else statement, but ran during the pre-processing phase.}
+
+    \item{\textbf{\#endif:} Terminates a conditional \#if block.}
+
+    \item{\textbf{\#ifdef:} Short form for \#if defined(x).}
+
+    \item{\textbf{\#ifndef:} Short form for \#if !defined(x).}
+
+    \item{\textbf{\#error:} Prints an error message to stderr during the pre-processing phase.}
+
+    \item{\textbf{\#pragma:} Issues special commands to the compiler during the pre-processing phase.}
+\end{itemize}
+
+Using these directives appropriately is an art that is difficult to master. Let’s begin by going through them
+sequentially. I will be grouping some directives together such as \#if, \#elif, and \#else, for example.
+
+\subsection{\#define}
+
+Aside from \#include, \#define is the directive that you will see used most and will be most beneficial to you.
+\#define will create what’s known as a macro, which is sort of like a label that expands to whatever text you
+provide afterwards. Macros don’t take up any physical address space in RAM because they are not actually
+variables that get initialized anywhere. The \#define directive takes in two "parameters": the name of the
+macro, and the macro’s assigned value. For example, we might be interfacing with a device where the I/O has been
+memory-mapped to a specific address in RAM. In order to read/write to/from this port, we can define the base
+address like so:
+
+\begin{clst}
+#define PORTA 0x2000
+\end{clst}
+
+In this case, whenever C comes across the macro PORTA, it is substituted with the literal text "0x2000".
+\#define can be dangerous because we can do things that are not permitted/defined within the C specification.
+For example, we can define our own opening and closing curly braces (please don't do this)!!!
+
+\begin{clst}
+#define OPEN_BRACE {
+#define CLOSE_BRACE }
+
+if (true) OPEN_BRACE
+// Do something
+CLOSE_BRACE
+\end{clst}
+
+Notice that the standard for macros is to make them capitalized. While it is not required to capitalize
+macros, it is still heavily encouraged for the purposes of readability and avoiding namespace clashing.
+
+\subsection{\#include}
+
+\#include is the most commonly used preprocessor directive, since it is required within nearly every source
+file that you write. Again, we haven't discussed header files yet, but let's just say that they are essentially
+files which contain definitions about certain variables and functions. The \#include directive is used to
+include these files into our code. \#include takes one "argument", which is the .h file that we are including.
+There are two options for how we include them. One is to use angle brackets (<>) and the other is to use
+parentheses (""). Angle brackets indicate that the header file can be found in a location on the host system
+that belongs to the compiler's lookup path. On linux, the linker first searches the \$LD\_LIBRARY\_PATH
+environment variable, followed by the \$PATH variable (see the man page for ld to get a more accurate list of
+directories that the linker searches). Angle brackets are typically used for header files that are already
+installed on your system due to being commonly used by other programs (e.g., header files that belong to the C
+runtime library). The parentheses indicate that you'd like to manually enter the path. This path can be a full
+path starting from your root directory, otherwise, the program will assume a relative path starting from the
+directory of the .c file in which \#include was used. For example:
+
+\begin{clst}
+// Common header file that belongs to libc. Probably exists under /usr/shared/lib
+#include <stdio.h>
+// Relative path. Header file likely belongs to your project
+#include "../../header.h"
+\end{clst}
+
+One final note about the \#include directive is that this does not "import" code in the same manner as a
+language like Java. The contents of header files that are included with \#include get substituted in-place
+i.e., at the location of the \#include directive. In other words, \#include essentially copies all the code in
+the header file and pastes it into the source file. Considering that \#include is a preprocessor directive,
+this means that no semantic analysis takes place when the file is inserted. In other words, C will not
+complain if we include any file that exists on the system until we actually try to compile. Due to the fact that
+the \#include is effectively a glorified paste command, it is actually possible to \#include C source files,
+which is a valid strategy that we'll look into later. We will certainly review this pre-processor directive more
+once we get to header files, but hopefully you now have a general idea of how it works.
+
+\subsection{\#undef}
+
+The \#undef pre-processor directive, as you may have guessed, undefines a macro that was previously defined.
+The use cases for \#undef are a bit niche, but there are certainly appropriate times to use it. The danger
+with \#undef is that it allows us to re-define macros, which can be dangerous if not used with caution. Here's
+an example of what you generally should not do:
+
+\begin{clst}
+// I do not condone the following code
+#define SOME_FLAG 0
+#undef SOME_FLAG
+...
+#define SOME_FLAG 1
+\end{clst}
+
+If you genuinely intend to undefine the macro, and don't plan on redefining it again, then \#undef is
+perfectly fine to use. And perhaps, if you are very cautious, I would even go as far as to say that it's okay
+to \#define, \#undef, and \#define again, so long as the second \#define sets the macro back to its original
+value. In general, if you find yourself reaching for this pre-processor directive, ask yourself whether there
+might be a better way of handling the issue before hastly slapping \#undef everywhere.
+
+\subsection{\#ifdef and \#ifndef}
+
+\#ifdef and \#ifndef are really nice pre-processor directives because they allow us to check whether a macro has
+been defined or not. In conjunction with \#define and \#undef, this can become very useful. This is commonly
+used to branch into specific portions of code depending upon the user's OS, or based on certain build options.
+We will be going over something called include guards, which use these directives, as well as a few other
+pre-processor idioms after I'm finished explaining all the directives. The only thing that you should know for
+now is that \#ifdef returns true if the macro provided is defined, and \#ifndef returns true if the macro
+provided is \textit{not} defined.
+
+\subsection{\#if, \#elif, \#else, \#endif}
+
+These 4 directives are equivalent to if, else if, and else. No matter how many \#ifs or \#elifs are used, an
+\#if directive must always close with \#endif. Once again, this is useful for blocking and controlling certain
+segments of code. We will also be going over examples in a bit.
+
+\subsection{\#error}
+
+The moment that \#error is reached, the program is aborted, and the error message supplied after abort is
+printed to stderr. This is probably a good time to talk about how we can have multi-line pre-processor
+directives. Since newline characters normally signify the end of a preprocessor directive, we must use the
+backslash '\' to indicate that we want to continue the next line. For example:
+
+\begin{clst}
+#error This is a very long error message\
+    that i am printing to stderr
+\end{clst}
+
+Note that the backslash allows us to continue the preprocessor directive onto the next line. This can aid with
+readability if you have a very long argument. Something very important to note is that adding an additional
+space after the backslash will cause the newline to remain, which can lead to code that is extremely hard to
+debug! For this reason, I recommend that you have your text editor remove trailing whitespace. Most editors
+have a setting to enable this feature, or if you are using something like [Neo]Vim, there are autocommands
+which can remove trailing whitespace on write.
+
+\subsection{\#pragma}
+
+\#pragma might just have to be a whole guide on its own, but it's okay because it's not great to rely on it in
+the first place. \#pragma actually has a bunch of subcommands called "pragma directives" that do extra work
+within the pre-processor. Pre-processor directives are not always enough to do everything that we want, so
+pragma directives can grant additional control. The reason I say that it's not great to rely on it is because
+the sub-directives that are available to you is heavily dependent upon the compiler that you are using.
+Generally, the only time I use the \#pragma directive is for suppressing compiler warnings that I don't care
+to see. The three major C compilers are GCC (GNU foundation), Clang (LLVM), and MSVC (Microsoft).
+
+\section{Pre-Defined Macros}
+
+Compilers which conform to modern language standards ought to implement some of the following pre-defined
+macros, which are available for use in your code. When the compiler defines a symbol internally, we call this
+a "compiler intrinsic". In fact, a lot of functions that you utilize in your code may be replaced by compiler
+intrinsic versions unless you explicitly state that you don't want the compiler to do so.
+
+\begin{itemize}
+
+\item{%
+    \textbf{\_\_DATE\_\_}: Expands to the current date in the format MM DD YYYY.
+}
+
+\item{%
+    \textbf{\_\_TIME\_\_}: Expands to the current time in the format HH:MM:SS.
+}
+
+\item{%
+    \textbf{\_\_FILE\_\_}: Expands to the name of the file that encloses it.
+}
+
+\item{%
+    \textbf{\_\_LINE\_\_}: Expands to the line number that the macro was declared on.
+}
+
+\item{%
+    \textbf{\_\_STDC\_\_}: Defined as 1 when the compiler complies with the ANSI standard (C89/C90). Note that
+    the -ansi compiler flag fufills a similar role by enforcing the ANSI standard during compilation.
+}
+
+\item{%
+    \textbf{\_\_STDC\_VERSION\_\_}: Prints a timestamp in the format YYYY MM that describes the C standard that
+    the compiler is using.
+}
+
+\item{%
+    \textbf{\_\_STDC\_HOSTED\_\_}: Defined as 1 when the compiler's target is a hosted environment. A hosted
+    environment is an environment which implements the full libc standard.
+}
+
+\item{%
+    \textbf{\_\_cplusplus}: Similar to \_\_STDC\_VERSION\_\_, \_\_cplusplus also expands to a version string
+    in the same format. It is used to test if a header was compiled by a C compiler or a C++ compiler.
+}
+
+\item{%
+    \textbf{\_\_OBJC\_\_}: Defined as 1 when the Objective-C compiler is in use (Objective-C was, once upon a
+    time, used by Apple).
+}
+
+\item{%
+    \textbf{\_\_ASSEMBLER\_\_}: Defined as 1 when preprocessing assembly language.
+}
+
+\item{%
+    \textbf{\_\_VA\_ARGS\_\_ }: List of variadic arguments (will cover in more depth in a later section).
+}
+
+\end{itemize}
+
+I want to make mention of a few other non-official pre-defined macros, which I have found good use for, but
+which are more dependent upon what compiler you're using than the ones mentioned previously. I am referring
+primarily to \_\_FUNCTION\_\_, \_\_PRETTY\_FUNCTION\_\_, and \_\_func\_\_. These all print out the enclosing
+function's name, with the exception being \_\_PRETTY\_FUNCTION\_\_, which prints out additional information
+about the enclosing function alongside just its name. There is no real difference between \_\_FUNCTION\_\_ and
+\_\_func\_\_ other than the fact that the latter was released later to resolve version compatibility issues,
+making it the more portable option, and effectively making \_\_FUNCTION\_\_ obsolete.
+
+As we just seen, a lot of the pre-defined macros begin with two underscores. The common convension is that a
+single underscore is reserved for low level system variables and two underscores are reserved for compiler
+intrinsics/built-ins.
+
+\section{Pre-Processor Macro Functions}
+
+The \#define directive allows for passing in arguments to the macro label. The compiler does not perform type
+checking until compile time, since the preprocessor just inserts whatever you pass to the macro as arguments
+in the proper positions. Since macros are substituted prior to compilation, it is very common to see
+operations occur out of order. For example, take the following macro:
+
+\begin{clst}
+#define SECOND_TO_MILLIS(s) s * 1000
+    timer_func(SECOND_TO_MILLIS(5 + 5)); // Trying to pass in 10,000 to timer_func()
+\end{clst}
+
+While it seems like this should work (converting 10 seconds to 10,000 milliseconds), we actually end up with
+5005ms. This is because the macro is expanded before being compiled. The parameter 's' gets substituted as
+5 + 5, thus SECOND\_TO\_MILLIS is evaluated as 5 + 5 * 1000. Order of operations states that the
+multiplication should occur prior to the addition, so this evaluates to 5005.
+
+The common solution to this issue it to surround everything in brackets when you pass in parameters to a
+macro. The \#define for SECOND\_TO\_MILLIS should be re-written as follows:
+
+\begin{clst}
+#define SECOND_TO_MILLIS(s) ((s) * 1000)
+\end{clst}
+
+This would expand 's' as (5 + 5) so that the addition would occur before the multiplication (since brackets
+take precedence in order of operations).
+
+\section{Common Macro Idioms}
+
+Programmers really enjoy finding general-purpose recurring patterns that can be reused. You'll hear developers
+discuss the most "idiomatic" method of going about solving a problem. Typically, this refers to employing a
+pattern which is built-in to the language, or exists as a higher level concept. Macros have a couple of commonly
+used idioms that are useful for solving recurring issues. The following couple of sub-sections will cover a
+handful of the idioms that I'm most familiar with (pertaining specifically to macros).
+
+\subsection{Include Guard Idiom}
+
+Anytime that we use the \#include directive, the directive will copy and paste the contents of the provided
+header file into our source file (a.k.a. the .c file). If we have multiple .c files, it is probable that
+multiple of them will include the same header files. This causes compiler issues since the compiler will think
+that you've redefined the same symbols twice, when you did not intend to. In order to make sure that a header
+file only gets included once within the entire project, we often use the include guard idiom. The include
+guard is added within the header file and prevents the header from being included more than once. Here is what
+the include guard looks like:
+
+\begin{clst}
+#ifndef FOO_H
+#define FOO_H
+
+// All of your variable/function declarations and whatnot
+...
+
+#endif // FOO_H
+\end{clst}
+
+What's happening here is that the \#ifndef checks to see if FOO\_H is a macro that has previously been defined.
+If it has been defined, then \#ifndef returns false, and the entire include guard is skipped, otherwise, we
+\#define FOO\_H (we don't need to give it any value, it just needs to exist), then we insert all the code
+and/or definitions that would normally be added to our header file. Keep in mind that the entire header gets
+pasted where we \#include the header file, which would include our include guard. The next time that a .c file
+tries to \#include foo.h, the \#ifndef returns false since we \#define(d) FOO\_H previously, and therefore, we
+skip to the \#endif statement at the bottom of the file, and foo.h does not get included a second time.
+
+\subsection{Disabling a Region of Code}
+
+Rather than commenting out a region of code using a multi-line comment, we can easily disable a region of code
+by using the \#if and \#endif macros. It's as simple as doing the following:
+
+\begin{clst}
+#if 0
+// Code to disable
+#endif
+\end{clst}
+
+This simple trick can comment out code the same as a regular multi-line comment. The \#if 0 always evaluates
+to false, since 0 is evaluated as false in boolean expressions in C. You may want to do this to enable or
+disable a region of code. Whilst you could just use a multi-line comment, this is much quicker, and allows you
+to disable code which has comments in it (since commenting comments can sometimes be problematic).
+
+\subsection{Quick Debugging}
+
+It is not uncommon to inexperienced programmers outputting a million print statements that say something along
+the lines of "made it to line 5" or something to that effect. If you're truly too lazy to use an actual
+debugger, then there is a slightly better way to do this (although you should probably just learn how to use a
+proper debugger). We haven't covered printf() yet, but it is C's function for printing text to stdout.
+
+\begin{clst}
+#define DEBUG_LOG printf("file: %s, function: %s, line: %d\n", \
+	 	 __FILE__, __func__, __LINE__)
+
+void foo() {
+    // Some code
+    ...
+    DEBUG_LOG;
+}
+\end{clst}
+
+Simply by adding the macro DEBUG\_LOG, we print out the function name and line number that we reached. Note
+that we have a semi-colon after DEBUG\_LOG. This is because out printf statement must end in a semi-colon.
+Since it's bad practice to put semi-colons in macros, we place it after the macro instead.
+
+\subsection{The do-while(0) Idiom}
+
+The do-while(0) idiom is sort of a confusing one because we must first understand the problem that it solves.
+Let's say that we want to have a macro that runs 2 or more functions in a row. You might consider writing
+something like the following:
+
+\begin{clst}
+#define RUN_FUNCS(x) do_this((x)); \
+		                 do_that((x))
+
+if (condition)
+    RUN_FUNCS(5);
+\end{clst}
+
+The if condition would expand to:
+
+\begin{clst}
+if (condition)
+	do_this(5);
+	do_that(5);
+\end{clst}
+
+Assuming that you were trying to fit both functions into the if statement, this will not result in the desired
+behaviour. If no scope is provided with the curly braces in an if statement, only the line that comes directly
+after the if will be evaluated. In this case, do\_this(5) would be evaluated if the if condition was true, and
+then, since do\_that(5) is not considered to be inside the if statement, it will get ran in all cases. If the
+if condition is false, do\_this(5) fails to run, but do\_that(5) still runs.
+
+In order to have both function calls be within the if statement block, we can use the do-while(0) idiom. This
+looks like the following:
+
+\begin{clst}
+#define RUN_FUNCS(x) do { \
+			     do_this((x)); \
+			     do_that((x)); \
+			     } while (0)
+\end{clst}
+
+Remember that 0 evaluates to false in boolean expression in C, so this do-while loop will only run once since
+while (0) will return false and exit the loop. However, because do\_this() and do\_that() are both enclosed
+within the do-while loop, the if statement will now include both functions.
+
+\begin{clst}
+if (condition)
+	RUN_FUNCS(5);
+\end{clst}
+
+Now the above expands to:
+
+\begin{clst}
+if (condition)
+	do {
+		do_this(5);
+		to_that(5);
+	} while (0);
+\end{clst}
+
+Which for all intents and purposes is identical to:
+
+\begin{clst}
+if (condition) {
+	do_this(5);
+	do_that(5);
+}
+\end{clst}
+
+Effectively, what we've established is that the do-while sheathes the code which is expanded within the macro
+with an enclosing scope.
+
+\end{document}

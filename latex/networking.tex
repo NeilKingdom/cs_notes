@@ -421,8 +421,13 @@ the loopback address. As stated, you can also enter localhost into the address b
 there will be a very small delay in the response due to the fact that this will route to the DNS server (which
 could potentially be far away) and then return 127.0.0.1. A loopback adapter is a file in Unix systems which
 acts as a physical device. It emulates a NIC, but is sandboxed so that it cannot connect to anything which
-is exterior to the host. The reserved IP 0.0.0.0 will achieve the same purposes as the loopback address because
-it listens for traffic on all available NICs, including the loopback adapter.
+is exterior to the host.
+
+Similar to the loopback address, 0.0.0.0, sometimes referred to as the default route or unspecified address, is
+a reserved IP used to listen on all available network interfaces (including the loopback interface). In
+network programming, we typically can't know ahead of time the IP addresses of the clients that will be
+connecting to the server. Therefore, server sockets will usually only accept the port as a parameter, and will
+default to using 0.0.0.0 to listen for traffic being sent to that port.
 
 \section{Ports}
 
